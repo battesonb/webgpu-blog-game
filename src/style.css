@@ -1,0 +1,16 @@
+:root {
+  color-scheme: light dark;
+  background-color: #121212;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  width: 100%;
+  min-height: 100vh;
+}
+
+div.container {
+  margin: auto;
+}
