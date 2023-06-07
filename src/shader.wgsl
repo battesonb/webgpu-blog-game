@@ -11,10 +11,10 @@ struct VertexOutput {
 @vertex
 fn vertexMain(in: VertexInput) -> VertexOutput {
   var output: VertexOutput;
-  let i = (f32(in.index)) / 2.0;
-  let r = step(i, 0.5) * (1 - i * 2);
-  let g = step(i, 0.5) * (i * 2);
-  let b = step(0.5, i) * (i * 2 - 1);
+  let i = in.index;
+  let r = f32(i == 0);
+  let g = f32(i == 1);
+  let b = f32(i == 2);
   output.clip_pos = vec4(in.pos, 0, 1);
   output.tint = vec3(r, g, b);
   return output;
