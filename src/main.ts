@@ -32,6 +32,18 @@ const vertexBuffer = device.createBuffer({
 
 device.queue.writeBuffer(vertexBuffer, 0, vertices);
 
+const indices = new Uint32Array([
+  0, 1, 2,
+]);
+
+const indexBuffer = device.createBuffer({
+  label: "index buffer",
+  size: indices.buffer.byteLength,
+  usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
+});
+
+device.queue.writeBuffer(indexBuffer, 0, indices);
+
 const vertexBufferLayout: GPUVertexBufferLayout = {
   stepMode: "vertex",
   arrayStride: 8,
@@ -80,7 +92,8 @@ const encoder = device.createCommandEncoder();
 
   pass.setPipeline(pipeline);
   pass.setVertexBuffer(0, vertexBuffer);
-  pass.draw(vertices.length / 2);
+  pass.setIndexBuffer(indexBuffer, "uint32");
+  pass.drawIndexed(indices.length, 1);
 
   pass.end();
 }
