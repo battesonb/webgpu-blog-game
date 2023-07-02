@@ -2,8 +2,15 @@ import {assertDefined} from "./assertions";
 import "./style.css";
 import shaderSource from "./shader.wgsl?raw";
 import {uvFromIndex, webGpuTextureFromUrl} from "./texture";
+import {Camera} from "./camera";
+import {Vec3} from "./math/vec3";
+import {Projection} from "./projection";
+import {toRadians} from "./math/helpers";
+import {SCREEN_HEIGHT, SCREEN_WIDTH} from "./config";
 
 const canvas = document.querySelector("canvas")!;
+canvas.width = SCREEN_WIDTH;
+canvas.height = SCREEN_HEIGHT;
 
 assertDefined(navigator.gpu, "WebGPU is not supported on this browser");
 const adapter = await navigator.gpu.requestAdapter();
@@ -21,11 +28,11 @@ context.configure({
 const texture = await webGpuTextureFromUrl(device, "./tileset.png");
 
 const vertices = new Float32Array([
-  // x, y, u, v
-  -0.5, -0.5, ...uvFromIndex(3, 0.0, 1.0, texture),
-  0.5, -0.5, ...uvFromIndex(3, 1.0, 1.0, texture),
-  0.5, 0.5, ...uvFromIndex(3, 1.0, 0.0, texture),
-  -0.5, 0.5, ...uvFromIndex(3, 0.0, 0.0, texture),
+  // x, y, z, u, v
+  -0.5, -0.5, 0, ...uvFromIndex(3, 0.0, 1.0, texture),
+  0.5, -0.5, 0, ...uvFromIndex(3, 1.0, 1.0, texture),
+  0.5, 0.5, 0, ...uvFromIndex(3, 1.0, 0.0, texture),
+  -0.5, 0.5, 0, ...uvFromIndex(3, 0.0, 0.0, texture),
 ]);
 
 const vertexBuffer = device.createBuffer({
@@ -50,16 +57,16 @@ device.queue.writeBuffer(indexBuffer, 0, indices);
 
 const vertexBufferLayout: GPUVertexBufferLayout = {
   stepMode: "vertex",
-  arrayStride: 16,
+  arrayStride: 20,
   attributes: [
     { // pos
-      format: "float32x2",
+      format: "float32x3",
       offset: 0,
       shaderLocation: 0,
     },
     { // uv
       format: "float32x2",
-      offset: 8,
+      offset: 12,
       shaderLocation: 1,
     }
   ],
@@ -77,6 +84,13 @@ const bindGroupLayout = device.createBindGroupLayout({
       binding: 1,
       visibility: GPUShaderStage.FRAGMENT,
       sampler: {},
+    },
+    {
+      binding: 2,
+      visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+      buffer: {
+        type: "uniform"
+      },
     }
   ]
 });
@@ -103,6 +117,11 @@ const pipeline = device.createRenderPipeline({
     targets: [{format: canvasFormat}]
   },
   layout: pipelineLayout,
+  primitive: {
+    topology: "triangle-list",
+    frontFace: "ccw",
+    cullMode: "none",
+  },
 });
 
 const sampler = device.createSampler({
@@ -113,6 +132,18 @@ const view = texture.createView({
   baseMipLevel: 0,
   mipLevelCount: 1,
 });
+
+const camera = new Camera(new Vec3(0, 0, 5));
+const projection = new Projection(SCREEN_WIDTH, SCREEN_HEIGHT, toRadians(35), 0.1, 100);
+const viewProj = projection.matrix().mul(camera.matrix());
+
+const uniformsArray = viewProj.buffer();
+const uniformsBuffer = device.createBuffer({
+  label: "uniforms buffer",
+  size: uniformsArray.byteLength,
+  usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+});
+device.queue.writeBuffer(uniformsBuffer, 0, uniformsArray);
 
 const bindGroup = device.createBindGroup({
   label: "bind group",
@@ -126,9 +157,12 @@ const bindGroup = device.createBindGroup({
       binding: 1,
       resource: sampler,
     },
+    {
+      binding: 2,
+      resource: {buffer: uniformsBuffer},
+    }
   ],
 });
-
 
 const encoder = device.createCommandEncoder();
 
