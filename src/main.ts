@@ -164,30 +164,47 @@ const bindGroup = device.createBindGroup({
   ],
 });
 
-const encoder = device.createCommandEncoder();
+function eventLoop() {
+  const now = performance.now();
+  const encoder = device.createCommandEncoder();
+  const radius = 5;
+  const angle = now / 1000;
+  projection.fovY = toRadians(60 + (30 * Math.cos(now / 2000)));
+  camera.position.x = Math.sin(angle) * radius;
+  camera.position.z = Math.cos(angle) * radius;
+  camera.yaw = angle;
+  const viewProj = projection.matrix().mul(camera.matrix());
 
-{
-  const pass = encoder.beginRenderPass({
-    colorAttachments: [{
-      view: context.getCurrentTexture().createView(),
-      storeOp: "store",
-      clearValue: [0.54, 0.7, 1.0, 1.0],
-      loadOp: "clear",
-    }],
-  });
+  const uniformsArray = viewProj.buffer();
+  device.queue.writeBuffer(uniformsBuffer, 0, uniformsArray);
 
-  pass.setPipeline(pipeline);
-  pass.setBindGroup(0, bindGroup);
-  pass.setVertexBuffer(0, vertexBuffer);
-  pass.setIndexBuffer(indexBuffer, "uint32");
-  pass.drawIndexed(indices.length, 1);
+  {
+    const pass = encoder.beginRenderPass({
+      colorAttachments: [{
+        view: context.getCurrentTexture().createView(),
+        storeOp: "store",
+        clearValue: [0.54, 0.7, 1.0, 1.0],
+        loadOp: "clear",
+      }],
+    });
 
-  pass.end();
+    pass.setPipeline(pipeline);
+    pass.setBindGroup(0, bindGroup);
+    pass.setVertexBuffer(0, vertexBuffer);
+    pass.setIndexBuffer(indexBuffer, "uint32");
+    pass.drawIndexed(indices.length, 1);
+
+    pass.end();
+  }
+
+  {
+    const commandBuffer = encoder.finish();
+    device.queue.submit([commandBuffer]);
+  }
+
+  requestAnimationFrame(eventLoop);
 }
 
-{
-  const commandBuffer = encoder.finish();
-  device.queue.submit([commandBuffer]);
-}
+requestAnimationFrame(eventLoop);
 
 export {};
