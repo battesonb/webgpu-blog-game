@@ -64,4 +64,13 @@ export class Mat4 {
       0, 0, 0, 0,
     );
   }
+
+  static identity(): Mat4 {
+    return new Mat4(
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1,
+    );
+  }
 }

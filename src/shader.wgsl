@@ -3,6 +3,13 @@ struct VertexInput {
   @location(1) uv: vec2f,
 };
 
+struct InstanceInput {
+  @location(3) model_matrix_0: vec4<f32>,
+  @location(4) model_matrix_1: vec4<f32>,
+  @location(5) model_matrix_2: vec4<f32>,
+  @location(6) model_matrix_3: vec4<f32>,
+}
+
 struct VertexOutput {
   @builtin(position) clip_pos: vec4f,
   @location(0) uv: vec2f,
@@ -17,9 +24,15 @@ struct Uniforms {
 @group(0) @binding(2) var<uniform> uniforms: Uniforms;
 
 @vertex
-fn vertexMain(in: VertexInput) -> VertexOutput {
+fn vertexMain(in: VertexInput, instance: InstanceInput) -> VertexOutput {
   var output: VertexOutput;
-  output.clip_pos = uniforms.viewProj * vec4f(in.pos.xyz, 1);
+  let model = mat4x4f(
+    instance.model_matrix_0,
+    instance.model_matrix_1,
+    instance.model_matrix_2,
+    instance.model_matrix_3,
+  );
+  output.clip_pos = uniforms.viewProj * model * vec4f(in.pos.xyz, 1);
   output.uv = in.uv;
   return output;
 }

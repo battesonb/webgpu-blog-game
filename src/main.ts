@@ -7,6 +7,7 @@ import {Vec3} from "./math/vec3";
 import {Projection} from "./projection";
 import {toRadians} from "./math/helpers";
 import {SCREEN_HEIGHT, SCREEN_WIDTH} from "./config";
+import {Mat4} from "./math/mat4";
 
 const canvas = document.querySelector("canvas")!;
 canvas.width = SCREEN_WIDTH;
@@ -102,6 +103,46 @@ const vertexBufferLayout: GPUVertexBufferLayout = {
   ],
 };
 
+const instance = new Float32Array(Mat4.identity().buffer());
+const instanceBuffer = device.createBuffer({
+  label: "instance buffer",
+  size: instance.buffer.byteLength,
+  usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+});
+
+device.queue.writeBuffer(instanceBuffer, 0, instance);
+
+const instanceBufferLayout: GPUVertexBufferLayout = {
+  stepMode: "instance",
+  arrayStride: 64,
+  attributes: [
+    {
+      // column #1
+      format: "float32x4",
+      offset: 0,
+      shaderLocation: 3,
+    },
+    {
+      // column #2
+      format: "float32x4",
+      offset: 16,
+      shaderLocation: 4,
+    },
+    {
+      // column #3
+      format: "float32x4",
+      offset: 32,
+      shaderLocation: 5,
+    },
+    {
+      // column #4
+      format: "float32x4",
+      offset: 48,
+      shaderLocation: 6,
+    },
+  ],
+};
+
 const bindGroupLayout = device.createBindGroupLayout({
   label: "bind group layout",
   entries: [
@@ -139,7 +180,7 @@ const pipeline = device.createRenderPipeline({
   vertex: {
     module: shaderModule,
     entryPoint: "vertexMain",
-    buffers: [vertexBufferLayout],
+    buffers: [vertexBufferLayout, instanceBufferLayout],
   },
   fragment: {
     module: shaderModule,
@@ -155,7 +196,7 @@ const pipeline = device.createRenderPipeline({
   primitive: {
     topology: "triangle-list",
     frontFace: "ccw",
-    cullMode: "none",
+    cullMode: "back",
   },
 });
 
@@ -236,6 +277,7 @@ function eventLoop() {
     pass.setPipeline(pipeline);
     pass.setBindGroup(0, bindGroup);
     pass.setVertexBuffer(0, vertexBuffer);
+    pass.setVertexBuffer(1, instanceBuffer);
     pass.setIndexBuffer(indexBuffer, "uint32");
     pass.drawIndexed(indices.length, 1);
 
