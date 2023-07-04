@@ -1,7 +1,7 @@
 import {assertDefined} from "./assertions";
 import "./style.css";
 import shaderSource from "./shader.wgsl?raw";
-import {uvFromIndex, webGpuTextureFromUrl} from "./texture";
+import {createDepthTexture, uvFromIndex, webGpuTextureFromUrl} from "./texture";
 import {Camera} from "./camera";
 import {Vec3} from "./math/vec3";
 import {Projection} from "./projection";
@@ -27,13 +27,42 @@ context.configure({
 
 const texture = await webGpuTextureFromUrl(device, "./tileset.png");
 
-const vertices = new Float32Array([
-  // x, y, z, u, v
-  -0.5, -0.5, 0, ...uvFromIndex(3, 0.0, 1.0, texture),
-  0.5, -0.5, 0, ...uvFromIndex(3, 1.0, 1.0, texture),
-  0.5, 0.5, 0, ...uvFromIndex(3, 1.0, 0.0, texture),
-  -0.5, 0.5, 0, ...uvFromIndex(3, 0.0, 0.0, texture),
-]);
+const cube = [
+  // x, y, z, u, v, atlas index
+  // front
+  [-0.5, -0.5, 0.5, 0.0, 1.0, 3],
+  [0.5, -0.5, 0.5, 1.0, 1.0, 3],
+  [0.5, 0.5, 0.5, 1.0, 0.0, 3],
+  [-0.5, 0.5, 0.5, 0.0, 0.0, 3],
+
+  // back
+  [0.5, -0.5, -0.5, 0.0, 1.0, 3],
+  [-0.5, -0.5, -0.5, 1.0, 1.0, 3],
+  [-0.5, 0.5, -0.5, 1.0, 0.0, 3],
+  [0.5, 0.5, -0.5, 0.0, 0.0, 3],
+
+  // right
+  [0.5, -0.5, 0.5, 0.0, 1.0, 3],
+  [0.5, -0.5, -0.5, 1.0, 1.0, 3],
+  [0.5, 0.5, -0.5, 1.0, 0.0, 3],
+  [0.5, 0.5, 0.5, 0.0, 0.0, 3],
+
+  // left
+  [-0.5, -0.5, -0.5, 0.0, 1.0, 3],
+  [-0.5, -0.5, 0.5, 1.0, 1.0, 3],
+  [-0.5, 0.5, 0.5, 1.0, 0.0, 3],
+  [-0.5, 0.5, -0.5, 0.0, 0.0, 3],
+
+  // top
+  [-0.5, 0.5, 0.5, 0.0, 1.0, 2],
+  [0.5, 0.5, 0.5, 1.0, 1.0, 2],
+  [0.5, 0.5, -0.5, 1.0, 0.0, 2],
+  [-0.5, 0.5, -0.5, 0.0, 0.0, 2],
+];
+
+const vertices = new Float32Array(cube.map(values => {
+  return [values[0], values[1], values[2], ...uvFromIndex(values[5], values[3], values[4], texture)];
+}).flat());
 
 const vertexBuffer = device.createBuffer({
   label: "vertex buffer",
@@ -43,9 +72,10 @@ const vertexBuffer = device.createBuffer({
 
 device.queue.writeBuffer(vertexBuffer, 0, vertices);
 
-const indices = new Uint32Array([
+const planes = cube.length / 4;
+const indices = new Uint32Array(Array.from({length: planes}).map((_, i) => ([
   0, 1, 2, 0, 2, 3
-]);
+]).map(x => x + i * 4)).flat());
 
 const indexBuffer = device.createBuffer({
   label: "index buffer",
@@ -117,6 +147,11 @@ const pipeline = device.createRenderPipeline({
     targets: [{format: canvasFormat}]
   },
   layout: pipelineLayout,
+  depthStencil: {
+    depthCompare: "less",
+    depthWriteEnabled: true,
+    format: "depth32float",
+  },
   primitive: {
     topology: "triangle-list",
     frontFace: "ccw",
@@ -133,7 +168,11 @@ const view = texture.createView({
   mipLevelCount: 1,
 });
 
-const camera = new Camera(new Vec3(0, 0, 5));
+const depthTexture = await createDepthTexture(device, SCREEN_WIDTH, SCREEN_HEIGHT);
+const depthView = depthTexture.createView();
+
+const camera = new Camera(new Vec3(0, 3, 5));
+camera.pitch = -0.5;
 const projection = new Projection(SCREEN_WIDTH, SCREEN_HEIGHT, toRadians(35), 0.1, 100);
 const viewProj = projection.matrix().mul(camera.matrix());
 
@@ -186,6 +225,12 @@ function eventLoop() {
         clearValue: [0.54, 0.7, 1.0, 1.0],
         loadOp: "clear",
       }],
+      depthStencilAttachment: {
+        view: depthView,
+        depthClearValue: 1,
+        depthLoadOp: "clear",
+        depthStoreOp: "store",
+      },
     });
 
     pass.setPipeline(pipeline);
