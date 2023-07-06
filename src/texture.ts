@@ -16,8 +16,9 @@ export async function webGpuTextureFromUrl(device: GPUDevice, url: string): Prom
 }
 
 const TILE_SIZE = 8;
+const PADDING = 1;
 export function uvFromIndex(index: number, x: number, y: number, texture: GPUTexture): [number, number] {
-  const i = ((index * TILE_SIZE) % texture.width) / texture.width;
+  const i = ((index * (TILE_SIZE + PADDING)) % texture.width) / texture.width;
   return [i + (x * TILE_SIZE) / texture.width, y * TILE_SIZE / texture.height];
 }
 
