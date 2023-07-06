@@ -1,3 +1,4 @@
+import {Vec3} from "./vec3";
 import {Vec4} from "./vec4";
 
 /**
@@ -54,6 +55,33 @@ export class Mat4 {
       }
 
       return result;
+  }
+
+  /**
+   * A method for defining a "look-at" matrix for a given position and target in
+   * a right-handed coordinate system.
+   *
+   * This makes use of a change of basis.
+   */
+  static lookAt(eye: Vec3, target: Vec3, up = Vec3.unit_y()): Mat4 {
+    const k = target.sub(eye).normal();
+    const i = up.cross(k).normal();
+    const j = k.cross(i).normal();
+    return new Mat4(
+      i.x, j.x, k.x, 0,
+      i.y, j.y, k.y, 0,
+      i.z, j.z, k.z, 0,
+        0,   0,   0, 1,
+    );
+  }
+
+  static translated(value: Vec3): Mat4 {
+    return new Mat4(
+      1, 0, 0, value.x,
+      0, 1, 0, value.y,
+      0, 0, 1, value.z,
+      0, 0, 0, 1,
+    );
   }
 
   static zero(): Mat4 {

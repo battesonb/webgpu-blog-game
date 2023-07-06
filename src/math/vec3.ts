@@ -36,6 +36,26 @@ export class Vec3 {
     this.rep[2] = value;
   }
 
+  sub(other: Vec3): Vec3 {
+    return new Vec3(this.x - other.x, this.y - other.y, this.z - other.z);
+  }
+
+  div(scalar: number): Vec3 {
+    return new Vec3(this.x / scalar, this.y / scalar, this.z / scalar);
+  }
+
+  magnitudeSquared(): number {
+    return this.x * this.x + this.y * this.y + this.z * this.z;
+  }
+
+  magnitude(): number {
+    return Math.sqrt(this.magnitudeSquared());
+  }
+
+  normal(): Vec3 {
+    return this.div(this.magnitude());
+  }
+
   dot(other: Vec3): number {
     return this.x * other.x + this.y * other.y + this.z * other.z;
   }
@@ -46,5 +66,13 @@ export class Vec3 {
       this.z * other.x - this.x * other.z,
       this.x * other.y - this.y * other.x
     );
+  }
+
+  static unit_y(): Vec3 {
+    return new Vec3(0, 1, 0);
+  }
+
+  static zero(): Vec3 {
+    return new Vec3(0, 0, 0);
   }
 }

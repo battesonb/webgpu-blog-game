@@ -40,5 +40,8 @@ fn vertexMain(in: VertexInput, instance: InstanceInput) -> VertexOutput {
 @fragment
 fn fragmentMain(in: VertexOutput) -> @location(0) vec4f {
   let color = textureSample(textureView, textureSampler, in.uv);
-  return vec4(color);
+  if (color.a == 0) {
+    discard;
+  }
+  return color;
 }

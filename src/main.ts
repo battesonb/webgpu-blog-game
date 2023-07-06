@@ -26,9 +26,60 @@ context.configure({
   format: canvasFormat,
 });
 
+const camera = new Camera(new Vec3(0, 5, 5));
+camera.pitch = -Math.PI / 4;
+const projection = new Projection(SCREEN_WIDTH, SCREEN_HEIGHT, toRadians(35), 0.1, 100);
+const viewProj = projection.matrix().mul(camera.matrix());
+
 const texture = await webGpuTextureFromUrl(device, "./tileset.png");
 
-const cube = [
+const playerDesc = [
+  [-0.5, -0.5, 0.5, 0.0, 1.0, 6],
+  [0.5, -0.5, 0.5, 1.0, 1.0, 6],
+  [0.5, 0.5, 0.5, 1.0, 0.0, 6],
+  [-0.5, 0.5, 0.5, 0.0, 0.0, 6],
+];
+
+const playerVertices = new Float32Array(playerDesc.map(values => {
+  return [values[0], values[1], values[2], ...uvFromIndex(values[5], values[3], values[4], texture)];
+}).flat());
+
+const playerVertexBuffer = device.createBuffer({
+  label: "player vertex buffer",
+  size: playerVertices.buffer.byteLength,
+  usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
+});
+
+device.queue.writeBuffer(playerVertexBuffer, 0, playerVertices);
+
+const playerPlanes = playerDesc.length / 4;
+const playerIndices = new Uint32Array(Array.from({length: playerPlanes}).map((_, i) => ([
+  0, 1, 2, 0, 2, 3
+]).map(x => x + i * 4)).flat());
+
+const playerIndexBuffer = device.createBuffer({
+  label: "player index buffer",
+  size: playerIndices.buffer.byteLength,
+  usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
+});
+
+device.queue.writeBuffer(playerIndexBuffer, 0, playerIndices);
+
+const playerInstance = new Float32Array(
+  Mat4
+    .lookAt(Vec3.zero(), camera.position)
+    .mul(Mat4.translated(new Vec3(0, 1, 0)))
+    .buffer()
+);
+const playerInstanceBuffer = device.createBuffer({
+  label: "player instance buffer",
+  size: playerInstance.buffer.byteLength,
+  usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+});
+
+device.queue.writeBuffer(playerInstanceBuffer, 0, playerInstance);
+
+const cubeDesc = [
   // x, y, z, u, v, atlas index
   // front
   [-0.5, -0.5, 0.5, 0.0, 1.0, 3],
@@ -61,30 +112,39 @@ const cube = [
   [-0.5, 0.5, -0.5, 0.0, 0.0, 2],
 ];
 
-const vertices = new Float32Array(cube.map(values => {
+const cubeVertices = new Float32Array(cubeDesc.map(values => {
   return [values[0], values[1], values[2], ...uvFromIndex(values[5], values[3], values[4], texture)];
 }).flat());
 
-const vertexBuffer = device.createBuffer({
-  label: "vertex buffer",
-  size: vertices.buffer.byteLength,
+const cubeVertexBuffer = device.createBuffer({
+  label: "cube vertex buffer",
+  size: cubeVertices.buffer.byteLength,
   usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
 });
 
-device.queue.writeBuffer(vertexBuffer, 0, vertices);
+device.queue.writeBuffer(cubeVertexBuffer, 0, cubeVertices);
 
-const planes = cube.length / 4;
-const indices = new Uint32Array(Array.from({length: planes}).map((_, i) => ([
+const cubePlanes = cubeDesc.length / 4;
+const cubeIndices = new Uint32Array(Array.from({length: cubePlanes}).map((_, i) => ([
   0, 1, 2, 0, 2, 3
 ]).map(x => x + i * 4)).flat());
 
-const indexBuffer = device.createBuffer({
-  label: "index buffer",
-  size: indices.buffer.byteLength,
+const cubeIndexBuffer = device.createBuffer({
+  label: "cube index buffer",
+  size: cubeIndices.buffer.byteLength,
   usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
 });
 
-device.queue.writeBuffer(indexBuffer, 0, indices);
+device.queue.writeBuffer(cubeIndexBuffer, 0, cubeIndices);
+
+const cubeInstance = new Float32Array(Mat4.identity().buffer());
+const cubeInstanceBuffer = device.createBuffer({
+  label: "cube instance buffer",
+  size: cubeInstance.buffer.byteLength,
+  usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+});
+
+device.queue.writeBuffer(cubeInstanceBuffer, 0, cubeInstance);
 
 const vertexBufferLayout: GPUVertexBufferLayout = {
   stepMode: "vertex",
@@ -102,15 +162,6 @@ const vertexBufferLayout: GPUVertexBufferLayout = {
     }
   ],
 };
-
-const instance = new Float32Array(Mat4.identity().buffer());
-const instanceBuffer = device.createBuffer({
-  label: "instance buffer",
-  size: instance.buffer.byteLength,
-  usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
-});
-
-device.queue.writeBuffer(instanceBuffer, 0, instance);
 
 const instanceBufferLayout: GPUVertexBufferLayout = {
   stepMode: "instance",
@@ -212,11 +263,6 @@ const view = texture.createView({
 const depthTexture = await createDepthTexture(device, SCREEN_WIDTH, SCREEN_HEIGHT);
 const depthView = depthTexture.createView();
 
-const camera = new Camera(new Vec3(0, 3, 5));
-camera.pitch = -0.5;
-const projection = new Projection(SCREEN_WIDTH, SCREEN_HEIGHT, toRadians(35), 0.1, 100);
-const viewProj = projection.matrix().mul(camera.matrix());
-
 const uniformsArray = viewProj.buffer();
 const uniformsBuffer = device.createBuffer({
   label: "uniforms buffer",
@@ -258,6 +304,14 @@ function eventLoop() {
   const uniformsArray = viewProj.buffer();
   device.queue.writeBuffer(uniformsBuffer, 0, uniformsArray);
 
+  const playerInstance = new Float32Array(
+    Mat4
+      .lookAt(Vec3.zero(), camera.position)
+      .mul(Mat4.translated(new Vec3(0, 1, 0)))
+      .buffer()
+  );
+  device.queue.writeBuffer(playerInstanceBuffer, 0, playerInstance);
+
   {
     const pass = encoder.beginRenderPass({
       colorAttachments: [{
@@ -276,10 +330,18 @@ function eventLoop() {
 
     pass.setPipeline(pipeline);
     pass.setBindGroup(0, bindGroup);
-    pass.setVertexBuffer(0, vertexBuffer);
-    pass.setVertexBuffer(1, instanceBuffer);
-    pass.setIndexBuffer(indexBuffer, "uint32");
-    pass.drawIndexed(indices.length, 1);
+    {
+      pass.setVertexBuffer(0, cubeVertexBuffer);
+      pass.setVertexBuffer(1, cubeInstanceBuffer);
+      pass.setIndexBuffer(cubeIndexBuffer, "uint32");
+      pass.drawIndexed(cubeIndices.length, 1);
+    }
+    {
+      pass.setVertexBuffer(0, playerVertexBuffer);
+      pass.setVertexBuffer(1, playerInstanceBuffer);
+      pass.setIndexBuffer(playerIndexBuffer, "uint32");
+      pass.drawIndexed(playerIndices.length, 1);
+    }
 
     pass.end();
   }

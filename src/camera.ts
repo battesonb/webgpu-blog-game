@@ -27,8 +27,8 @@ export class Camera {
   matrix(): Mat4 {
     const e = this.position;
     const d = this.dir();
-    const r = d.cross(new Vec3(0, 1, 0));
-    const u = r.cross(d);
+    const r = d.cross(new Vec3(0, 1, 0)).normal();
+    const u = r.cross(d).normal();
     return new Mat4(
        r.x,  r.y,  r.z, -e.dot(r),
        u.x,  u.y,  u.z, -e.dot(u),
