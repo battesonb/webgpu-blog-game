@@ -34,10 +34,10 @@ const viewProj = projection.matrix().mul(camera.matrix());
 const texture = await webGpuTextureFromUrl(device, "./tileset.png");
 
 const playerDesc = [
-  [-0.5, -0.5, 0.5, 0.0, 1.0, 6],
-  [0.5, -0.5, 0.5, 1.0, 1.0, 6],
-  [0.5, 0.5, 0.5, 1.0, 0.0, 6],
-  [-0.5, 0.5, 0.5, 0.0, 0.0, 6],
+  [-0.5, -0.5, 0, 0.0, 1.0, 6],
+  [0.5, -0.5, 0, 1.0, 1.0, 6],
+  [0.5, 0.5, 0, 1.0, 0.0, 6],
+  [-0.5, 0.5, 0, 0.0, 0.0, 6],
 ];
 
 const playerVertices = new Float32Array(playerDesc.map(values => {
@@ -65,12 +65,7 @@ const playerIndexBuffer = device.createBuffer({
 
 device.queue.writeBuffer(playerIndexBuffer, 0, playerIndices);
 
-const playerInstance = new Float32Array(
-  Mat4
-    .lookAt(Vec3.zero(), camera.position)
-    .mul(Mat4.translated(new Vec3(0, 1, 0)))
-    .buffer()
-);
+const playerInstance = new Float32Array(Mat4.identity().buffer());
 const playerInstanceBuffer = device.createBuffer({
   label: "player instance buffer",
   size: playerInstance.buffer.byteLength,
@@ -305,9 +300,10 @@ function eventLoop() {
   device.queue.writeBuffer(uniformsBuffer, 0, uniformsArray);
 
   const playerInstance = new Float32Array(
-    Mat4
-      .lookAt(Vec3.zero(), camera.position)
-      .mul(Mat4.translated(new Vec3(0, 1, 0)))
+    Mat4.translated(new Vec3(0, 1, 0))
+      .mul(Mat4.scaled(Vec3.fill(0.8)))
+      .mul(Mat4
+        .lookAt(Vec3.zero(), camera.position))
       .buffer()
   );
   device.queue.writeBuffer(playerInstanceBuffer, 0, playerInstance);

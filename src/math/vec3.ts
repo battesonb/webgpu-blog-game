@@ -75,4 +75,8 @@ export class Vec3 {
   static zero(): Vec3 {
     return new Vec3(0, 0, 0);
   }
+
+  static fill(scalar: number): Vec3 {
+    return new Vec3(scalar, scalar, scalar);
+  }
 }

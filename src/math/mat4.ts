@@ -84,6 +84,15 @@ export class Mat4 {
     );
   }
 
+  static scaled(value: Vec3): Mat4 {
+    return new Mat4(
+      value.x,       0,       0, 0,
+            0, value.y,       0, 0,
+            0,       0, value.z, 0,
+            0,       0,       0, 1,
+    );
+  }
+
   static zero(): Mat4 {
     return new Mat4(
       0, 0, 0, 0,
