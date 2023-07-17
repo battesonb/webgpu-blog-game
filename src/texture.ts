@@ -1,3 +1,5 @@
+import {Vec2} from "./math/vec2";
+
 export async function webGpuTextureFromUrl(device: GPUDevice, url: string): Promise<GPUTexture> {
   const blob = await fetch(url).then(res => res.blob());
   const imageBitmap = await createImageBitmap(blob);
@@ -17,9 +19,9 @@ export async function webGpuTextureFromUrl(device: GPUDevice, url: string): Prom
 
 const TILE_SIZE = 8;
 const PADDING = 1;
-export function uvFromIndex(index: number, x: number, y: number, texture: GPUTexture): [number, number] {
+export function uvFromIndex(index: number, x: number, y: number, texture: GPUTexture): Vec2 {
   const i = ((index * (TILE_SIZE + PADDING)) % texture.width) / texture.width;
-  return [i + (x * TILE_SIZE) / texture.width, y * TILE_SIZE / texture.height];
+  return new Vec2(i + (x * TILE_SIZE) / texture.width, y * TILE_SIZE / texture.height);
 }
 
 export async function createDepthTexture(device: GPUDevice, width: number, height: number): Promise<GPUTexture> {

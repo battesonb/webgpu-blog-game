@@ -12,6 +12,10 @@ export class Vec3 {
     this.rep = [x, y, z];
   }
 
+  clone(): Vec3 {
+    return new Vec3(this.x, this.y, this.z);
+  }
+
   get x() {
     return this.rep[0];
   }
@@ -66,6 +70,10 @@ export class Vec3 {
       this.z * other.x - this.x * other.z,
       this.x * other.y - this.y * other.x
     );
+  }
+
+  neg(): Vec3 {
+    return new Vec3(-this.x, -this.y, -this.z);
   }
 
   static unit_y(): Vec3 {

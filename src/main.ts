@@ -1,13 +1,17 @@
 import {assertDefined} from "./assertions";
 import "./style.css";
 import shaderSource from "./shader.wgsl?raw";
-import {createDepthTexture, uvFromIndex, webGpuTextureFromUrl} from "./texture";
-import {Camera} from "./camera";
-import {Vec3} from "./math/vec3";
+import {createDepthTexture, webGpuTextureFromUrl} from "./texture";
 import {Projection} from "./projection";
 import {toRadians} from "./math/helpers";
 import {SCREEN_HEIGHT, SCREEN_WIDTH} from "./config";
-import {Mat4} from "./math/mat4";
+import {GpuResources} from "./resources/gpu-resources";
+import {World} from "./ec/world";
+import {newCamera} from "./entities/camera";
+import {newPlayer} from "./entities/player";
+import {Camera} from "./components/camera";
+import {Transform} from "./components/transform";
+import {newTerrain} from "./entities/terrain";
 
 const canvas = document.querySelector("canvas")!;
 canvas.width = SCREEN_WIDTH;
@@ -26,120 +30,10 @@ context.configure({
   format: canvasFormat,
 });
 
-const camera = new Camera(new Vec3(0, 5, 5));
-camera.pitch = -Math.PI / 4;
 const projection = new Projection(SCREEN_WIDTH, SCREEN_HEIGHT, toRadians(35), 0.1, 100);
-const viewProj = projection.matrix().mul(camera.matrix());
+const viewProj = projection.matrix();
 
 const texture = await webGpuTextureFromUrl(device, "./tileset.png");
-
-const playerDesc = [
-  [-0.5, -0.5, 0, 0.0, 1.0, 6],
-  [0.5, -0.5, 0, 1.0, 1.0, 6],
-  [0.5, 0.5, 0, 1.0, 0.0, 6],
-  [-0.5, 0.5, 0, 0.0, 0.0, 6],
-];
-
-const playerVertices = new Float32Array(playerDesc.map(values => {
-  return [values[0], values[1], values[2], ...uvFromIndex(values[5], values[3], values[4], texture)];
-}).flat());
-
-const playerVertexBuffer = device.createBuffer({
-  label: "player vertex buffer",
-  size: playerVertices.buffer.byteLength,
-  usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
-});
-
-device.queue.writeBuffer(playerVertexBuffer, 0, playerVertices);
-
-const playerPlanes = playerDesc.length / 4;
-const playerIndices = new Uint32Array(Array.from({length: playerPlanes}).map((_, i) => ([
-  0, 1, 2, 0, 2, 3
-]).map(x => x + i * 4)).flat());
-
-const playerIndexBuffer = device.createBuffer({
-  label: "player index buffer",
-  size: playerIndices.buffer.byteLength,
-  usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
-});
-
-device.queue.writeBuffer(playerIndexBuffer, 0, playerIndices);
-
-const playerInstance = new Float32Array(Mat4.identity().buffer());
-const playerInstanceBuffer = device.createBuffer({
-  label: "player instance buffer",
-  size: playerInstance.buffer.byteLength,
-  usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
-});
-
-device.queue.writeBuffer(playerInstanceBuffer, 0, playerInstance);
-
-const cubeDesc = [
-  // x, y, z, u, v, atlas index
-  // front
-  [-0.5, -0.5, 0.5, 0.0, 1.0, 3],
-  [0.5, -0.5, 0.5, 1.0, 1.0, 3],
-  [0.5, 0.5, 0.5, 1.0, 0.0, 3],
-  [-0.5, 0.5, 0.5, 0.0, 0.0, 3],
-
-  // back
-  [0.5, -0.5, -0.5, 0.0, 1.0, 3],
-  [-0.5, -0.5, -0.5, 1.0, 1.0, 3],
-  [-0.5, 0.5, -0.5, 1.0, 0.0, 3],
-  [0.5, 0.5, -0.5, 0.0, 0.0, 3],
-
-  // right
-  [0.5, -0.5, 0.5, 0.0, 1.0, 3],
-  [0.5, -0.5, -0.5, 1.0, 1.0, 3],
-  [0.5, 0.5, -0.5, 1.0, 0.0, 3],
-  [0.5, 0.5, 0.5, 0.0, 0.0, 3],
-
-  // left
-  [-0.5, -0.5, -0.5, 0.0, 1.0, 3],
-  [-0.5, -0.5, 0.5, 1.0, 1.0, 3],
-  [-0.5, 0.5, 0.5, 1.0, 0.0, 3],
-  [-0.5, 0.5, -0.5, 0.0, 0.0, 3],
-
-  // top
-  [-0.5, 0.5, 0.5, 0.0, 1.0, 2],
-  [0.5, 0.5, 0.5, 1.0, 1.0, 2],
-  [0.5, 0.5, -0.5, 1.0, 0.0, 2],
-  [-0.5, 0.5, -0.5, 0.0, 0.0, 2],
-];
-
-const cubeVertices = new Float32Array(cubeDesc.map(values => {
-  return [values[0], values[1], values[2], ...uvFromIndex(values[5], values[3], values[4], texture)];
-}).flat());
-
-const cubeVertexBuffer = device.createBuffer({
-  label: "cube vertex buffer",
-  size: cubeVertices.buffer.byteLength,
-  usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
-});
-
-device.queue.writeBuffer(cubeVertexBuffer, 0, cubeVertices);
-
-const cubePlanes = cubeDesc.length / 4;
-const cubeIndices = new Uint32Array(Array.from({length: cubePlanes}).map((_, i) => ([
-  0, 1, 2, 0, 2, 3
-]).map(x => x + i * 4)).flat());
-
-const cubeIndexBuffer = device.createBuffer({
-  label: "cube index buffer",
-  size: cubeIndices.buffer.byteLength,
-  usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
-});
-
-device.queue.writeBuffer(cubeIndexBuffer, 0, cubeIndices);
-
-const cubeInstance = new Float32Array(Mat4.identity().buffer());
-const cubeInstanceBuffer = device.createBuffer({
-  label: "cube instance buffer",
-  size: cubeInstance.buffer.byteLength,
-  usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
-});
-
-device.queue.writeBuffer(cubeInstanceBuffer, 0, cubeInstance);
 
 const vertexBufferLayout: GPUVertexBufferLayout = {
   stepMode: "vertex",
@@ -285,29 +179,38 @@ const bindGroup = device.createBindGroup({
   ],
 });
 
-function eventLoop() {
-  const now = performance.now();
-  const encoder = device.createCommandEncoder();
-  const radius = 5;
-  const angle = now / 1000;
-  projection.fovY = toRadians(60 + (30 * Math.cos(now / 2000)));
-  camera.position.x = Math.sin(angle) * radius;
-  camera.position.z = Math.cos(angle) * radius;
-  camera.yaw = angle;
-  const viewProj = projection.matrix().mul(camera.matrix());
+const gpuResources = new GpuResources(device, texture);
+const world = new World();
+world
+  .withResource(GpuResources, gpuResources);
+
+world.addEntities(
+  newCamera(),
+  newPlayer(world),
+  newTerrain(world),
+);
+
+function update(now: number) {
+  const dt = (now - lastTime) / 1000;
+  world.update({
+    now,
+    dt,
+    world,
+  });
+}
+
+function render(now: number) {
+  const dt = (now - lastTime) / 1000;
+  const camera = world.getByName("camera");
+  assertDefined(camera, "Camera not found");
+  const cameraComponent = camera.getComponent(Camera)!;
+  const camTransform = camera.getComponent(Transform)!;
+  const viewProj = projection.matrix().mul(cameraComponent.matrix(camTransform.position));
 
   const uniformsArray = viewProj.buffer();
   device.queue.writeBuffer(uniformsBuffer, 0, uniformsArray);
 
-  const playerInstance = new Float32Array(
-    Mat4.translated(new Vec3(0, 1, 0))
-      .mul(Mat4.scaled(Vec3.fill(0.8)))
-      .mul(Mat4
-        .lookAt(Vec3.zero(), camera.position))
-      .buffer()
-  );
-  device.queue.writeBuffer(playerInstanceBuffer, 0, playerInstance);
-
+  const encoder = device.createCommandEncoder();
   {
     const pass = encoder.beginRenderPass({
       colorAttachments: [{
@@ -326,18 +229,11 @@ function eventLoop() {
 
     pass.setPipeline(pipeline);
     pass.setBindGroup(0, bindGroup);
-    {
-      pass.setVertexBuffer(0, cubeVertexBuffer);
-      pass.setVertexBuffer(1, cubeInstanceBuffer);
-      pass.setIndexBuffer(cubeIndexBuffer, "uint32");
-      pass.drawIndexed(cubeIndices.length, 1);
-    }
-    {
-      pass.setVertexBuffer(0, playerVertexBuffer);
-      pass.setVertexBuffer(1, playerInstanceBuffer);
-      pass.setIndexBuffer(playerIndexBuffer, "uint32");
-      pass.drawIndexed(playerIndices.length, 1);
-    }
+
+    world.render({
+      dt,
+      pass,
+    });
 
     pass.end();
   }
@@ -346,10 +242,21 @@ function eventLoop() {
     const commandBuffer = encoder.finish();
     device.queue.submit([commandBuffer]);
   }
+}
+
+let lastTime = performance.now();
+function eventLoop() {
+  let now = performance.now();
+
+  update(now)
+  render(now);
+
+  lastTime = now;
 
   requestAnimationFrame(eventLoop);
 }
 
+// Kick things off
 requestAnimationFrame(eventLoop);
 
 export {};

@@ -3,3 +3,9 @@ export function assertDefined<T>(value: T | null | undefined, message: string): 
     throw new Error(message);
   }
 }
+
+export function assert(condition: boolean, message: string) {
+  if (!condition) {
+    throw new Error(message);
+  }
+}

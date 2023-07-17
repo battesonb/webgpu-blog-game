@@ -1,13 +1,13 @@
-import {Mat4} from "./math/mat4";
-import {Vec3} from "./math/vec3";
+import {Component} from "../ec/component";
+import {Mat4} from "../math/mat4";
+import {Vec3} from "../math/vec3";
 
-export class Camera {
-  position: Vec3;
+export class Camera extends Component {
   yaw: number;
   private _pitch: number;
 
-  constructor(position: Vec3) {
-    this.position = position;
+  constructor() {
+    super();
     this.yaw = 0;
     this._pitch = 0;
   }
@@ -24,8 +24,8 @@ export class Camera {
     this._pitch = Math.max(-Math.PI/2 + 0.01, Math.min(Math.PI/2 - 0.01, value));
   }
 
-  matrix(): Mat4 {
-    const e = this.position;
+  matrix(position: Vec3): Mat4 {
+    const e = position;
     const d = this.dir();
     const r = d.cross(new Vec3(0, 1, 0)).normal();
     const u = r.cross(d).normal();
