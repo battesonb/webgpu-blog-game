@@ -19,10 +19,6 @@ export interface RenderContext {
 export abstract class Component {
   private _entity?: Entity;
 
-  withComponent<T extends Component>(type: { new(...args: any[]): T }, component: T): Entity {
-    return this._entity!.withComponent(type, component);
-  }
-
   getComponent<T extends Component>(type: { new(...args: any[]): T }): T | undefined {
     return this._entity?.getComponent(type);
   }

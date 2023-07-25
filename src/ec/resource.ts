@@ -1,4 +1,3 @@
-
 /**
  * Can be thought of as a global component. Only one may exist in a World at a
  * given time. Adding a new resource of an existing type will overwrite the
