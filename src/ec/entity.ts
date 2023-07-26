@@ -26,12 +26,12 @@ export class Entity {
 
   withComponentDefault<T extends Component>(type: { new(): T }): Entity {
     const component = new type();
-    return this.withComponent(type, component);
+    return this.withComponent(component);
   }
 
-  withComponent<T extends Component>(type: { new(...args: any[]): T }, component: T): Entity {
+  withComponent<T extends Component>(component: T): Entity {
     component.entity = this;
-    this._components.set(getComponentId(type), component);
+    this._components.set(getComponentId(component.constructor as { new(...args: any[]): T } ), component);
     return this;
   }
 

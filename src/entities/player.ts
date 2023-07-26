@@ -22,7 +22,7 @@ export function newPlayer(world: World): Entity {
   transform.position.y = 1;
   const texture = world.getResource(GpuResources)!.texture;
   return new Entity("player")
-    .withComponent(Transform, transform)
+    .withComponent(transform)
     .withComponentDefault(Billboard)
-    .withComponent(Mesh, new Mesh(plane(texture, 6)));
+    .withComponent(new Mesh(plane(texture, 6)));
 }

@@ -12,6 +12,6 @@ export function newCamera(): Entity {
   camera.yaw = toRadians(45);
   camera.pitch = toRadians(-45);
   return new Entity("camera")
-    .withComponent(Transform, transform)
-    .withComponent(Camera, camera);
+    .withComponent(transform)
+    .withComponent(camera);
 }

@@ -45,6 +45,6 @@ export function newTerrain(world: World): Entity {
   const transform = new Transform();
   const texture = world.getResource(GpuResources)!.texture;
   return new Entity("terrain")
-    .withComponent(Transform, transform)
-    .withComponent(Mesh, new Mesh(cube(texture, 2, 3)));
+    .withComponent(transform)
+    .withComponent(new Mesh(cube(texture, 2, 3)));
 }

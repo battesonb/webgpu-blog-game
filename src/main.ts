@@ -182,7 +182,7 @@ const bindGroup = device.createBindGroup({
 const gpuResources = new GpuResources(device, texture);
 const world = new World();
 world
-  .withResource(GpuResources, gpuResources);
+  .withResource(gpuResources);
 
 world.addEntities(
   newCamera(),

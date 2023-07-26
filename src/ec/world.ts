@@ -16,11 +16,11 @@ export class World {
 
   withResourceDefault<T extends Resource>(type: { new(): T }): World {
     const resource = new type();
-    return this.withResource(type, resource);
+    return this.withResource(resource);
   }
 
-  withResource<T extends Resource>(type: { new(...args: any[]): T }, resource: T): World {
-    this._resources.set(getResourceId(type), resource);
+  withResource<T extends Resource>(resource: T): World {
+    this._resources.set(getResourceId(resource.constructor as { new(...args: any[]): T }), resource);
     return this;
   }
 
