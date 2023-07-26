@@ -20,8 +20,8 @@ export class Entity {
     return this._name;
   }
 
-  get components(): Component[] {
-    return [...this._components.values()];
+  get components(): IterableIterator<Component> {
+    return this._components.values()
   }
 
   withComponentDefault<T extends Component>(type: { new(): T }): Entity {
