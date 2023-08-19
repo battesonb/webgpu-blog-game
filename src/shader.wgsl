@@ -1,6 +1,7 @@
 struct VertexInput {
   @location(0) pos: vec3f,
   @location(1) uv: vec2f,
+  @location(2) color: vec3f,
 };
 
 struct InstanceInput {
@@ -13,6 +14,7 @@ struct InstanceInput {
 struct VertexOutput {
   @builtin(position) clip_pos: vec4f,
   @location(0) uv: vec2f,
+  @location(1) color: vec3f,
 };
 
 struct Uniforms {
@@ -34,6 +36,7 @@ fn vertexMain(in: VertexInput, instance: InstanceInput) -> VertexOutput {
   );
   output.clip_pos = uniforms.viewProj * model * vec4f(in.pos.xyz, 1);
   output.uv = in.uv;
+  output.color = in.color;
   return output;
 }
 
@@ -43,5 +46,5 @@ fn fragmentMain(in: VertexOutput) -> @location(0) vec4f {
   if (color.a == 0) {
     discard;
   }
-  return color;
+  return vec4(color.rgb * in.color, 1);
 }

@@ -93,6 +93,12 @@ export class Terrain extends Component {
           b.position.x += c.x;
           b.position.y += c.y;
           b.position.z += c.z;
+          if (d.y == 1) {
+            let darken = (c.x + c.z) % 2 == 0;
+            if (darken) {
+              b.color = b.color.mul(0.95);
+            }
+          }
           return b;
         });
       }).flat();

@@ -52,6 +52,11 @@ export class Vec3 {
     return new Vec3(this.x / scalar, this.y / scalar, this.z / scalar);
   }
 
+  mul(scalar: number): Vec3 {
+    return new Vec3(this.x * scalar, this.y * scalar, this.z * scalar);
+  }
+
+
   magnitudeSquared(): number {
     return this.x * this.x + this.y * this.y + this.z * this.z;
   }

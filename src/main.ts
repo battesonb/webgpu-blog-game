@@ -38,7 +38,7 @@ const texture = await webGpuTextureFromUrl(device, "./tileset.png");
 
 const vertexBufferLayout: GPUVertexBufferLayout = {
   stepMode: "vertex",
-  arrayStride: 20,
+  arrayStride: 32,
   attributes: [
     { // pos
       format: "float32x3",
@@ -49,6 +49,11 @@ const vertexBufferLayout: GPUVertexBufferLayout = {
       format: "float32x2",
       offset: 12,
       shaderLocation: 1,
+    },
+    { // color
+      format: "float32x3",
+      offset: 20,
+      shaderLocation: 2,
     }
   ],
 };
