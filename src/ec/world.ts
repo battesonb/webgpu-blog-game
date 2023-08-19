@@ -64,7 +64,7 @@ export class World {
     }
 
     for (const resource of this._resources.values()) {
-      resource.postUpdate();
+      resource.postUpdate(ctx);
     }
   }
 

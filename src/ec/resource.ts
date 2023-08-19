@@ -1,3 +1,5 @@
+import {UpdateContext} from "./component";
+
 /**
  * Can be thought of as a global component. Only one may exist in a World at a
  * given time. Adding a new resource of an existing type will overwrite the
@@ -12,7 +14,7 @@ export abstract class Resource {
   /**
    * Performed after the `update` lifecycle method.
    */
-  postUpdate() {}
+  postUpdate(_ctx: UpdateContext) {}
 }
 
 /**
