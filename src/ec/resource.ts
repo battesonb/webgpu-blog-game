@@ -8,6 +8,11 @@ export abstract class Resource {
    * Performed on cleanup of the world.
    */
   destroy() {}
+
+  /**
+   * Performed after the `update` lifecycle method.
+   */
+  postUpdate() {}
 }
 
 /**

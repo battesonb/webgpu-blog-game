@@ -62,6 +62,10 @@ export class World {
         component.update(ctx);
       }
     }
+
+    for (const resource of this._resources.values()) {
+      resource.postUpdate();
+    }
   }
 
   /**
