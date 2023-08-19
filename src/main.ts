@@ -12,6 +12,7 @@ import {newPlayer} from "./entities/player";
 import {Camera} from "./components/camera";
 import {Transform} from "./components/transform";
 import {newTerrain} from "./entities/terrain";
+import {Input} from "./resources/input";
 
 const canvas = document.querySelector("canvas")!;
 canvas.width = SCREEN_WIDTH;
@@ -182,6 +183,7 @@ const bindGroup = device.createBindGroup({
 const gpuResources = new GpuResources(device, texture);
 const world = new World();
 world
+  .withResourceDefault(Input)
   .withResource(gpuResources);
 
 world.addEntities(

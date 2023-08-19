@@ -7,6 +7,7 @@ import {Vertex} from "../vertex";
 import {World} from "../ec/world";
 import {uvFromIndex} from "../texture";
 import {GpuResources} from "../resources/gpu-resources";
+import {PlayerController} from "../components/player-controller";
 
 export function plane(texture: GPUTexture, index: number) {
   return [
@@ -24,5 +25,6 @@ export function newPlayer(world: World): Entity {
   return new Entity("player")
     .withComponent(transform)
     .withComponentDefault(Billboard)
+    .withComponentDefault(PlayerController)
     .withComponent(new Mesh(plane(texture, 6)));
 }

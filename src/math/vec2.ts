@@ -27,4 +27,24 @@ export class Vec2 {
   set y(value: number) {
     this.rep[1] = value;
   }
+
+  div(scalar: number): Vec2 {
+    return new Vec2(this.x / scalar, this.y / scalar);
+  }
+
+  magnitudeSquared(): number {
+    return this.x * this.x + this.y * this.y;
+  }
+
+  magnitude(): number {
+    return Math.sqrt(this.magnitudeSquared());
+  }
+
+  normal(): Vec2 {
+    return this.div(this.magnitude());
+  }
+
+  static zero(): Vec2 {
+    return new Vec2(0, 0);
+  }
 }
