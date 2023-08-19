@@ -40,6 +40,10 @@ export class Vec3 {
     this.rep[2] = value;
   }
 
+  add(other: Vec3): Vec3 {
+    return new Vec3(this.x + other.x, this.y + other.y, this.z + other.z);
+  }
+
   sub(other: Vec3): Vec3 {
     return new Vec3(this.x - other.x, this.y - other.y, this.z - other.z);
   }

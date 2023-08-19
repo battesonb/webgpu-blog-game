@@ -220,6 +220,7 @@ function render(now: number) {
         storeOp: "store",
         clearValue: [0.54, 0.7, 1.0, 1.0],
         loadOp: "clear",
+
       }],
       depthStencilAttachment: {
         view: depthView,

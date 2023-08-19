@@ -23,10 +23,21 @@ export class Mesh extends Component {
    * since meshes in this game are small.
    */
   private _vertices: Vertex[];
+  /**
+   * A per-frame check to see if the vertices list was updated in the previous
+   * frame.
+   */
+  private _shouldUpdate: boolean;
 
   constructor(vertices: Vertex[] = []) {
     super();
     this._vertices = vertices;
+    this._shouldUpdate = false;
+  }
+
+  set vertices(value: Vertex[]) {
+    this._shouldUpdate = true;
+    this._vertices = value;
   }
 
   init(ctx: InitContext): void {
@@ -76,6 +87,10 @@ export class Mesh extends Component {
   update(ctx: UpdateContext): void {
     const {world} = ctx;
     const device = world.getResource(GpuResources)!.device;
+
+    if (this._shouldUpdate) {
+      this.createVertexAndIndexBuffers(device);
+    }
 
     const transform = this.getComponent(Transform);
     assertDefined(transform, "Transform must exist on entity with a mesh");

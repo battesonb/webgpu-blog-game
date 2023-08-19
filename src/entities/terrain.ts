@@ -1,4 +1,5 @@
 import {Mesh} from "../components/mesh";
+import {Terrain} from "../components/terrain";
 import {Transform} from "../components/transform";
 import {Entity} from "../ec/entity";
 import {World} from "../ec/world";
@@ -46,5 +47,6 @@ export function newTerrain(world: World): Entity {
   const texture = world.getResource(GpuResources)!.texture;
   return new Entity("terrain")
     .withComponent(transform)
+    .withComponentDefault(Terrain)
     .withComponent(new Mesh(cube(texture, 2, 3)));
 }
