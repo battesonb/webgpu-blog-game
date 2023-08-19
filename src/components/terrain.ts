@@ -53,9 +53,9 @@ export class Terrain extends Component {
   private _mesh?: Mesh;
   private _texture?: GPUTexture;
 
-  static SIZE_X = 40;
+  static SIZE_X = 80;
   static SIZE_Y = 8;
-  static SIZE_Z = 40;
+  static SIZE_Z = 80;
 
   constructor() {
     super();

@@ -82,6 +82,8 @@ export class Mesh extends Component {
       });
       device.queue.writeBuffer(this.indexBuffer, 0, indexArray);
     }
+
+    this._shouldUpdate = false;
   }
 
   update(ctx: UpdateContext): void {
