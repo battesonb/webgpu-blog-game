@@ -10,7 +10,7 @@ export class Follow extends Component {
   transform?: Transform;
   target?: Entity;
 
-  constructor(targetName: string, offset: number, lerpRatio: number = 0.92) {
+  constructor(targetName: string, offset: number, lerpRatio: number = 0.05) {
     super();
     this.targetName = targetName;
     this.offset = offset;

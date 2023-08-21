@@ -8,5 +8,5 @@ export function clamp(a: number, b: number, value: number) {
 
 export function lerp(a: number, b: number, ratio: number) {
   const t = clamp(0, 1, ratio);
-  return t * a + (1-t) * b;
+  return a + t * (b - a);
 }
