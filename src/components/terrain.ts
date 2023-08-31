@@ -7,8 +7,35 @@ import {Mesh} from "./mesh";
 
 export enum Block {
   Air = 0,
-  Grass = 1,
-  Dirt = 2,
+  Dirt = 1,
+  Grass = 2,
+  Stone = 3,
+}
+
+function topIndex(block: Block) {
+  switch (block) {
+    case Block.Dirt:
+      return 0;
+    case Block.Grass:
+      return 2;
+    case Block.Stone:
+      return 4;
+    case Block.Air:
+      throw new Error("Should never call with air");
+  }
+}
+
+function sideIndex(block: Block) {
+  switch (block) {
+    case Block.Dirt:
+      return 1;
+    case Block.Grass:
+      return 3;
+    case Block.Stone:
+      return 5;
+    case Block.Air:
+      throw new Error("Should never call with air");
+  }
 }
 
 const cardinalDirections = [
@@ -80,7 +107,8 @@ export class Terrain extends Component {
 
   private generateVertices(texture: GPUTexture): Vertex[] {
     return Array.from({length: Terrain.SIZE_X * Terrain.SIZE_Y * Terrain.SIZE_Z}).map((_, index) => {
-      if (this._blocks[index] == Block.Air) {
+      const block = this._blocks[index];
+      if (block == Block.Air) {
         return [];
       }
       const c = Terrain.coordinates(index);
@@ -88,18 +116,17 @@ export class Terrain extends Component {
         if (this.hasNeighbor(c, d)) {
           return [];
         }
-        return cubePlane(texture, 2, 3, d).map(a => {
-          const b = a.clone();
-          b.position.x += c.x;
-          b.position.y += c.y;
-          b.position.z += c.z;
+        return cubePlane(texture, topIndex(block), sideIndex(block), d).map(a => {
+          a.position.x += c.x;
+          a.position.y += c.y;
+          a.position.z += c.z;
           if (d.y == 1) {
             let darken = (c.x + c.z) % 2 == 0;
             if (darken) {
-              b.color = b.color.mul(0.95);
+              a.color = a.color.mul(0.95);
             }
           }
-          return b;
+          return a;
         });
       }).flat();
     }).flat();
