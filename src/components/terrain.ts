@@ -50,26 +50,26 @@ const cardinalDirections = [
 function cubePlane(texture: GPUTexture, topIndex: number, sideIndex: number, direction: Vec3) {
   if (direction.x == 1) {
     return [
-      new Vertex(new Vec3(0.5, -0.5, 0.5), uvFromIndex(sideIndex, 0.0, 1.0, texture)),
-      new Vertex(new Vec3(0.5, -0.5, -0.5), uvFromIndex(sideIndex, 1.0, 1.0, texture)),
-      new Vertex(new Vec3(0.5, 0.5, -0.5), uvFromIndex(sideIndex, 1.0, 0.0, texture)),
-      new Vertex(new Vec3(0.5, 0.5, 0.5), uvFromIndex(sideIndex, 0.0, 0.0, texture)),
+      new Vertex(new Vec3(1, 0, 1), uvFromIndex(sideIndex, 0.0, 1.0, texture)),
+      new Vertex(new Vec3(1, 0, 0), uvFromIndex(sideIndex, 1.0, 1.0, texture)),
+      new Vertex(new Vec3(1, 1, 0), uvFromIndex(sideIndex, 1.0, 0.0, texture)),
+      new Vertex(new Vec3(1, 1, 1), uvFromIndex(sideIndex, 0.0, 0.0, texture)),
     ];
   // skipping x == -1 (we can't see it)
   } else if (direction.z == 1) {
     return [
-      new Vertex(new Vec3(-0.5, -0.5, 0.5), uvFromIndex(sideIndex, 0.0, 1.0, texture)),
-      new Vertex(new Vec3(0.5, -0.5, 0.5), uvFromIndex(sideIndex, 1.0, 1.0, texture)),
-      new Vertex(new Vec3(0.5, 0.5, 0.5), uvFromIndex(sideIndex, 1.0, 0.0, texture)),
-      new Vertex(new Vec3(-0.5, 0.5, 0.5), uvFromIndex(sideIndex, 0.0, 0.0, texture)),
+      new Vertex(new Vec3(0, 0, 1), uvFromIndex(sideIndex, 0.0, 1.0, texture)),
+      new Vertex(new Vec3(1, 0, 1), uvFromIndex(sideIndex, 1.0, 1.0, texture)),
+      new Vertex(new Vec3(1, 1, 1), uvFromIndex(sideIndex, 1.0, 0.0, texture)),
+      new Vertex(new Vec3(0, 1, 1), uvFromIndex(sideIndex, 0.0, 0.0, texture)),
     ];
   // skipping z == -1 (we can't see it)
   } else if (direction.y == 1) {
     return [
-      new Vertex(new Vec3(-0.5, 0.5, 0.5), uvFromIndex(topIndex, 0.0, 1.0, texture)),
-      new Vertex(new Vec3(0.5, 0.5, 0.5), uvFromIndex(topIndex, 1.0, 1.0, texture)),
-      new Vertex(new Vec3(0.5, 0.5, -0.5), uvFromIndex(topIndex, 1.0, 0.0, texture)),
-      new Vertex(new Vec3(-0.5, 0.5, -0.5), uvFromIndex(topIndex, 0.0, 0.0, texture)),
+      new Vertex(new Vec3(0, 1, 1), uvFromIndex(topIndex, 0.0, 1.0, texture)),
+      new Vertex(new Vec3(1, 1, 1), uvFromIndex(topIndex, 1.0, 1.0, texture)),
+      new Vertex(new Vec3(1, 1, 0), uvFromIndex(topIndex, 1.0, 0.0, texture)),
+      new Vertex(new Vec3(0, 1, 0), uvFromIndex(topIndex, 0.0, 0.0, texture)),
     ];
   }
   return [];
@@ -91,10 +91,24 @@ export class Terrain extends Component {
       if (c.y == 0) {
         return Block.Dirt;
       }
-      if (c.y > 2 * (-Math.cos(c.x * 0.15) + Math.sin(c.z * 0.25 + 0.5))) {
+      if (c.y > 1 + (Math.cos(c.z * 0.2 - 0.3 + c.x * 0.15) + Math.sin(c.z * 0.25 + 0.5))) {
         return Block.Air;
       }
       return Block.Dirt;
+    });
+
+    this._blocks = this._blocks.map((block, index) => {
+      const c = Terrain.coordinates(index);
+      if (block == Block.Air) {
+        if (Math.random() < 0.025 && this.hasNeighbor(c, new Vec3(0, -1, 0))) {
+          return Block.Stone;
+        }
+        return block;
+      }
+      if (!this.hasNeighbor(c, Vec3.unitY())) {
+        return Block.Grass
+      }
+      return block;
     });
   }
 

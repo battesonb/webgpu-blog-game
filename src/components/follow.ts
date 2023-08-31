@@ -21,7 +21,7 @@ export class Follow extends Component {
     const {world} = ctx;
     this.target = world.getByName(this.targetName);
     this.transform = this.getComponent(Transform);
-    this.lerpToTarget(0);
+    this.lerpToTarget(1);
   }
 
   update(_: UpdateContext): void {

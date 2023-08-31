@@ -63,7 +63,7 @@ export class Mat4 {
    *
    * This makes use of a change of basis.
    */
-  static lookAt(eye: Vec3, target: Vec3, up = Vec3.unit_y()): Mat4 {
+  static lookAt(eye: Vec3, target: Vec3, up = Vec3.unitY()): Mat4 {
     const k = target.sub(eye).normal();
     const i = up.cross(k).normal();
     const j = k.cross(i).normal();

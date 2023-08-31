@@ -85,10 +85,17 @@ export class Vec3 {
     return new Vec3(-this.x, -this.y, -this.z);
   }
 
-  static unit_y(): Vec3 {
+  static unitX(): Vec3 {
+    return new Vec3(1, 0, 0);
+  }
+
+  static unitY(): Vec3 {
     return new Vec3(0, 1, 0);
   }
 
+  static unitZ(): Vec3 {
+    return new Vec3(0, 0, 1);
+  }
   static zero(): Vec3 {
     return new Vec3(0, 0, 0);
   }
