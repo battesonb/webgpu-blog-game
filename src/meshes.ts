@@ -1,0 +1,21 @@
+import {Vec3} from "./math/vec3";
+import {uvFromIndex} from "./texture";
+import {Vertex} from "./vertex";
+
+export function plane(texture: GPUTexture, index: number) {
+  return [
+    new Vertex(new Vec3(-0.5, -0.5, 0), uvFromIndex(index, 0.0, 1.0, texture)),
+    new Vertex(new Vec3(0.5, -0.5, 0), uvFromIndex(index, 1.0, 1.0, texture)),
+    new Vertex(new Vec3(0.5, 0.5, 0), uvFromIndex(index, 1.0, 0.0, texture)),
+    new Vertex(new Vec3(-0.5, 0.5, 0), uvFromIndex(index, 0.0, 0.0, texture)),
+  ];
+}
+
+export function upPlane(texture: GPUTexture, index: number) {
+  return [
+    new Vertex(new Vec3(-0.5, 0, 0.5), uvFromIndex(index, 0.0, 1.0, texture)),
+    new Vertex(new Vec3(0.5, 0, 0.5), uvFromIndex(index, 1.0, 1.0, texture)),
+    new Vertex(new Vec3(0.5, 0, -0.5), uvFromIndex(index, 1.0, 0.0, texture)),
+    new Vertex(new Vec3(-0.5, 0, -0.5), uvFromIndex(index, 0.0, 0.0, texture)),
+  ];
+}

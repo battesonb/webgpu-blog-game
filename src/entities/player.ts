@@ -2,34 +2,28 @@ import {Billboard} from "../components/billboard";
 import {Entity} from "../ec/entity";
 import {Mesh} from "../components/mesh";
 import {Transform} from "../components/transform";
-import {Vec3} from "../math/vec3";
-import {Vertex} from "../vertex";
 import {World} from "../ec/world";
-import {uvFromIndex} from "../texture";
 import {GpuResources} from "../resources/gpu-resources";
 import {PlayerController} from "../components/player-controller";
 import {Terrain} from "../components/terrain";
 import {Body} from "../components/body";
+import {newShadow} from "./shadow";
+import {plane} from "../meshes";
 
-export function plane(texture: GPUTexture, index: number) {
-  return [
-    new Vertex(new Vec3(-0.5, -0.5, 0.5), uvFromIndex(index, 0.0, 1.0, texture)),
-    new Vertex(new Vec3(0.5, -0.5, 0.5), uvFromIndex(index, 1.0, 1.0, texture)),
-    new Vertex(new Vec3(0.5, 0.5, 0.5), uvFromIndex(index, 1.0, 0.0, texture)),
-    new Vertex(new Vec3(-0.5, 0.5, 0.5), uvFromIndex(index, 0.0, 0.0, texture)),
-  ];
-}
-
-export function newPlayer(world: World): Entity {
+export function newPlayer(world: World): Entity[] {
   const transform = new Transform();
   transform.position.y = 8;
   transform.position.x = Terrain.SIZE_X / 2;
   transform.position.z = Terrain.SIZE_Z / 2;
   const texture = world.getResource(GpuResources)!.texture;
-  return new Entity("player")
+  const player = new Entity("player")
     .withComponent(transform)
     .withComponent(new Body())
     .withComponentDefault(Billboard)
     .withComponentDefault(PlayerController)
     .withComponent(new Mesh(plane(texture, 6)));
+
+  const shadow = newShadow(world, "player");
+
+  return [player, shadow];
 }

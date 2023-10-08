@@ -193,8 +193,8 @@ world
 
 world.addEntities(
   newCamera(),
-  newPlayer(world),
-  newTerrain(world),
+  ...newPlayer(world),
+  newTerrain(),
 );
 
 function update(now: number) {
