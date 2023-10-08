@@ -9,6 +9,7 @@ import {uvFromIndex} from "../texture";
 import {GpuResources} from "../resources/gpu-resources";
 import {PlayerController} from "../components/player-controller";
 import {Terrain} from "../components/terrain";
+import {Body} from "../components/body";
 
 export function plane(texture: GPUTexture, index: number) {
   return [
@@ -21,12 +22,13 @@ export function plane(texture: GPUTexture, index: number) {
 
 export function newPlayer(world: World): Entity {
   const transform = new Transform();
-  transform.position.y = 1;
+  transform.position.y = 8;
   transform.position.x = Terrain.SIZE_X / 2;
   transform.position.z = Terrain.SIZE_Z / 2;
   const texture = world.getResource(GpuResources)!.texture;
   return new Entity("player")
     .withComponent(transform)
+    .withComponent(new Body())
     .withComponentDefault(Billboard)
     .withComponentDefault(PlayerController)
     .withComponent(new Mesh(plane(texture, 6)));

@@ -40,6 +40,10 @@ export class Vec3 {
     this.rep[2] = value;
   }
 
+  map(map: (component: number) => number): Vec3 {
+    return new Vec3(map(this.x), map(this.y), map(this.z));
+  }
+
   add(other: Vec3): Vec3 {
     return new Vec3(this.x + other.x, this.y + other.y, this.z + other.z);
   }

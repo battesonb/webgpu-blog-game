@@ -1,3 +1,4 @@
+import {Aabb} from "../aabb";
 import {Component, InitContext} from "../ec/component";
 import {Vec3} from "../math/vec3";
 import {GpuResources} from "../resources/gpu-resources";
@@ -156,10 +157,23 @@ export class Terrain extends Component {
   }
 
   getBlock(coord: Vec3): Block | undefined {
-    const index = Terrain.index(coord.x, coord.y, coord.z);
+    const intCoord = coord.map(Math.floor);
+    const index = Terrain.index(intCoord.x, intCoord.y, intCoord.z);
     if (index !== undefined) {
       return this._blocks[index];
     }
+  }
+
+  getBlockAabb(coord: Vec3): Aabb | undefined {
+    const intCoord = coord.map(Math.floor);
+    const index = Terrain.index(intCoord.x, intCoord.y, intCoord.z);
+    if (index !== undefined) {
+      const block = this._blocks[index];
+      if (block != Block.Air) {
+        return new Aabb(intCoord.map(c => c + 0.5), Vec3.fill(1));
+      }
+    }
+    return undefined;
   }
 
   hasNeighbor(coord: Vec3, offset: Vec3): boolean {

@@ -1,18 +1,23 @@
 import {Component, InitContext, UpdateContext} from "../ec/component";
 import {Vec2} from "../math/vec2";
 import {Input} from "../resources/input";
-import {Transform} from "./transform";
+import {Body} from "./body";
 
 export class PlayerController extends Component {
-  speed: number = 4;
-  transform?: Transform;
+  private _speed: number = 4;
+  private _jumpSpeed = 5;
+  private _body?: Body;
+
+  constructor() {
+    super();
+  }
 
   init(_: InitContext): void {
-    this.transform = this.getComponent(Transform);
+    this._body = this.getComponent(Body);
   }
 
   update(ctx: UpdateContext): void {
-    const { dt, world } = ctx;
+    const {world} = ctx;
     const input = world.getResource(Input)!;
     let direction = Vec2.zero();
     if (input.keyDown("a")) {
@@ -33,8 +38,15 @@ export class PlayerController extends Component {
     if (direction.magnitudeSquared() > 0.1) {
       direction = direction.normal();
 
-      this.transform!.position.x += this.speed * direction.x * dt;
-      this.transform!.position.z += this.speed * direction.y * dt;
+      this._body!.velocity.x = this._speed * direction.x;
+      this._body!.velocity.z = this._speed * direction.y;
+    } else {
+      this._body!.velocity.x = 0;
+      this._body!.velocity.z = 0;
+    }
+
+    if (input.keyDown(" ") && this._body!.onGround && this._body!.velocity.y <= 0) {
+      this._body!.velocity.y = this._jumpSpeed;
     }
   }
 }
