@@ -6,12 +6,11 @@ import {toRadians} from "../math/helpers";
 
 export function newCamera(): Entity {
   const transform = new Transform();
-  transform.position.y = 20;
   const camera = new Camera();
   camera.yaw = toRadians(45);
   camera.pitch = toRadians(-45);
   return new Entity("camera")
     .withComponent(transform)
-    .withComponent(new Follow("player", 14))
+    .withComponent(new Follow("player", 14, 20))
     .withComponent(camera);
 }

@@ -1,38 +1,50 @@
 import {Component, InitContext, UpdateContext} from "../ec/component";
-import {Entity} from "../ec/entity";
+import {World} from "../ec/world";
 import {lerp} from "../math/helpers";
+import {Vec3} from "../math/vec3";
+import {Terrain} from "./terrain";
 import {Transform} from "./transform";
 
 export class Follow extends Component {
   readonly targetName: string;
-  readonly offset: number;
+  readonly horizontalOffset: number;
+  readonly verticalOffset: number;
   readonly lerpRatio: number;
-  transform?: Transform;
-  target?: Entity;
+  private _transform?: Transform;
 
-  constructor(targetName: string, offset: number, lerpRatio: number = 0.05) {
+  constructor(targetName: string, horizontalOffset: number, verticalOffset: number, lerpRatio: number = 0.05) {
     super();
     this.targetName = targetName;
-    this.offset = offset;
+    this.horizontalOffset = horizontalOffset;
+    this.verticalOffset = verticalOffset;
     this.lerpRatio = lerpRatio;
   }
 
   init(ctx: InitContext): void {
     const {world} = ctx;
-    this.target = world.getByName(this.targetName);
-    this.transform = this.getComponent(Transform);
-    this.lerpToTarget(1);
+    this._transform = this.getComponent(Transform);
+    const target = this.targetPosition(world);
+    this.lerpToTarget(target, 1);
   }
 
-  update(_: UpdateContext): void {
-    this.lerpToTarget(this.lerpRatio);
+  update(ctx: UpdateContext): void {
+    const {world} = ctx;
+    const target = this.targetPosition(world);
+    this.lerpToTarget(target, this.lerpRatio);
+  }
+
+  private targetPosition(world: World): Vec3 {
+    const target = world.getByName(this.targetName);
+    if (!target) {
+      return new Vec3(Terrain.SIZE_X * 1.5, 110, Terrain.SIZE_Z * 1.5);
+    }
+    return target.getComponent(Transform)!.position;
   }
   
-  private lerpToTarget(t: number) {
-    const transform = this.transform!;
-    const target = this.target!;
-    const targetPosition = target.getComponent(Transform)!.position;
-    transform.position.x = this.offset + lerp(transform.position.x - this.offset, targetPosition.x, t);
-    transform.position.z = this.offset + lerp(transform.position.z - this.offset, targetPosition.z, t);
+  private lerpToTarget(target: Vec3, t: number) {
+    const transform = this._transform!;
+    transform.position.x = this.horizontalOffset + lerp(transform.position.x - this.horizontalOffset, target.x, t);
+    transform.position.z = this.horizontalOffset + lerp(transform.position.z - this.horizontalOffset, target.z, t);
+    transform.position.y = this.verticalOffset + lerp(transform.position.y - this.verticalOffset, target.y, t);
   }
 }

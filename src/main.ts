@@ -11,6 +11,7 @@ import {newCamera} from "./entities/camera";
 import {newPlayer} from "./entities/player";
 import {newTerrain} from "./entities/terrain";
 import {Input} from "./resources/input";
+import {newSpawner} from "./entities/spawner";
 
 const canvas = document.querySelector("canvas")!;
 canvas.width = SCREEN_WIDTH;
@@ -195,6 +196,7 @@ world.addEntities(
   newCamera(),
   ...newPlayer(world),
   newTerrain(),
+  newSpawner(),
 );
 
 let pause = false;

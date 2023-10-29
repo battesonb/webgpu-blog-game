@@ -53,11 +53,14 @@ export class Vec3 {
   }
 
   div(scalar: number): Vec3 {
-    return new Vec3(this.x / scalar, this.y / scalar, this.z / scalar);
+    return this.map(c => c / scalar);
   }
 
-  mul(scalar: number): Vec3 {
-    return new Vec3(this.x * scalar, this.y * scalar, this.z * scalar);
+  mul(value: number | Vec3): Vec3 {
+    if (value instanceof Vec3) {
+      return new Vec3(this.x * value.x, this.y * value.y, this.z * value.z);
+    }
+    return this.map(c => c * value);
   }
 
 
