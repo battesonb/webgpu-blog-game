@@ -14,7 +14,11 @@ export class World {
     this._resources = new Map();
   }
 
-  withResourceDefault<T extends Resource>(type: { new(): T }): World {
+  get entities(): IterableIterator<Entity> {
+    return this._entities.values();
+  }
+
+  withResourceDefault<T extends Resource>(type: {new(): T}): World {
     const resource = new type();
     return this.withResource(resource);
   }
@@ -60,6 +64,10 @@ export class World {
     }
 
     this._newEntities.splice(0);
+
+    for (const resource of this._resources.values()) {
+      resource.preUpdate(ctx);
+    }
 
     for (const entity of this._entities.values()) {
       for (const component of entity.components) {

@@ -12,7 +12,12 @@ export abstract class Resource {
   destroy() {}
 
   /**
-   * Performed after the `update` lifecycle method.
+   * Performed before `update` lifecycle method of components.
+   */
+  preUpdate(_ctx: UpdateContext) {}
+
+  /**
+   * Performed after `update` lifecycle method of components.
    */
   postUpdate(_ctx: UpdateContext) {}
 }

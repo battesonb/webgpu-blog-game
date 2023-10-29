@@ -2,15 +2,13 @@ import {assertDefined} from "./assertions";
 import "./style.css";
 import shaderSource from "./shader.wgsl?raw";
 import {createDepthTexture, webGpuTextureFromUrl} from "./texture";
-import {Projection} from "./projection";
+import {Projection} from "./resources/projection";
 import {toRadians} from "./math/helpers";
 import {SCREEN_HEIGHT, SCREEN_WIDTH} from "./config";
 import {GpuResources} from "./resources/gpu-resources";
 import {World} from "./ec/world";
 import {newCamera} from "./entities/camera";
 import {newPlayer} from "./entities/player";
-import {Camera} from "./components/camera";
-import {Transform} from "./components/transform";
 import {newTerrain} from "./entities/terrain";
 import {Input} from "./resources/input";
 
@@ -31,7 +29,7 @@ context.configure({
   format: canvasFormat,
 });
 
-const projection = new Projection(SCREEN_WIDTH, SCREEN_HEIGHT, toRadians(35), 0.1, 100);
+const projection = new Projection(SCREEN_WIDTH, SCREEN_HEIGHT, toRadians(35), 0.1, 500);
 const viewProj = projection.matrix();
 
 const texture = await webGpuTextureFromUrl(device, "./tileset.png");
@@ -187,9 +185,11 @@ const bindGroup = device.createBindGroup({
 
 const gpuResources = new GpuResources(device, texture);
 const world = new World();
+const input = new Input(canvas);
 world
-  .withResourceDefault(Input)
-  .withResource(gpuResources);
+  .withResource(projection)
+  .withResource(gpuResources)
+  .withResource(input);
 
 world.addEntities(
   newCamera(),
@@ -197,22 +197,23 @@ world.addEntities(
   newTerrain(),
 );
 
+let pause = false;
 function update(now: number) {
   const dt = (now - lastTime) / 1000;
+  if (input.keyReleased("p")) {
+    pause = !pause;
+  }
   world.update({
     now,
-    dt,
+    dt: pause ? 0 : dt,
     world,
   });
 }
 
 function render(now: number) {
   const dt = (now - lastTime) / 1000;
-  const camera = world.getByName("camera");
-  assertDefined(camera, "Camera not found");
-  const cameraComponent = camera.getComponent(Camera)!;
-  const camTransform = camera.getComponent(Transform)!;
-  const viewProj = projection.matrix().mul(cameraComponent.matrix(camTransform.position));
+  const gpuResources = world.getResource(GpuResources)!;
+  const viewProj = gpuResources.viewProj!;
 
   const uniformsArray = viewProj.buffer();
   device.queue.writeBuffer(uniformsBuffer, 0, uniformsArray);

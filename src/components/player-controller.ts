@@ -2,6 +2,7 @@ import {Component, InitContext, UpdateContext} from "../ec/component";
 import {Vec2} from "../math/vec2";
 import {Input} from "../resources/input";
 import {Body} from "./body";
+import {Turret} from "./turret";
 
 export class PlayerController extends Component {
   private _speed: number = 4;
@@ -47,6 +48,12 @@ export class PlayerController extends Component {
 
     if (input.keyDown(" ") && this._body!.onGround && this._body!.velocity.y <= 0) {
       this._body!.velocity.y = this._jumpSpeed;
+    }
+
+    if (input.mouseDown || input.keyDown("e")) {
+      const worldPosition = input.mouseWorldPickedPosition;
+      const turret = this.getComponent(Turret)!;
+      turret.queueShot(new Vec2(worldPosition.x, worldPosition.z));
     }
   }
 }

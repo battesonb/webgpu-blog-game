@@ -46,4 +46,8 @@ export class Vec4 {
   dot(other: Vec4): number {
     return this.x * other.x + this.y * other.y + this.z * other.z + this.w * other.w;
   }
+
+  static zero(): Vec4 {
+    return new Vec4(0, 0, 0, 0);
+  }
 }

@@ -1,6 +1,7 @@
-import {Mat4} from "./math/mat4";
+import {Resource} from "../ec/resource";
+import {Mat4} from "../math/mat4";
 
-export class Projection {
+export class Projection extends Resource {
   width: number;
   height: number;
   fovY: number;
@@ -8,6 +9,7 @@ export class Projection {
   far: number;
 
   constructor(width: number, height: number, fovYRadians: number, near: number, far: number) {
+    super();
     this.width = width;
     this.height = height;
     this.fovY = fovYRadians;
