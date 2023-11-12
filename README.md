@@ -9,7 +9,7 @@ for anyone else to poke at. If you want to follow along the whole journey, you
 can go through my
 [posts](https://blog.batteson.com/graphics/2023/06/04/webgpu-game-1-boilerplate).
 
-https://github.com/battesonb/webgpu-blog-game/assets/14352376/2f76b144-d0d6-4186-a7c0-7bf8ab85b0a6
+https://github.com/battesonb/webgpu-blog-game/assets/14352376/c1dc675a-299b-46eb-9ed4-6a477ba247d4
 
 If you have a WebGPU-enabled browser, you can play it
 [here](https://battesonb.github.io/webgpu-blog-game/). I'm sure you'll do
