@@ -28,6 +28,10 @@ export class Vec2 {
     this.rep[1] = value;
   }
 
+  sub(other: Vec2): Vec2 {
+    return new Vec2(this.x - other.x, this.y - other.y);
+  }
+
   div(scalar: number): Vec2 {
     return new Vec2(this.x / scalar, this.y / scalar);
   }

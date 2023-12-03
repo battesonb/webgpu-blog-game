@@ -35,11 +35,23 @@ export class Entity {
     return this;
   }
 
-  getComponent<T extends Component>(type: { new(): T }): T | undefined {
+  getComponent<T extends Component>(type: { new(...args: any[]): T }): T | undefined {
     const component = this._components.get(getComponentId(type));
     if (component) {
       return component as T;
     }
     return undefined;
+  }
+
+  hasComponent<T extends Component>(type: { new(): T }): boolean {
+    return this._components.has(getComponentId(type));
+  }
+
+  hasComponentAnd<T extends Component>(type: { new(): T }, predicate: (component: T) => boolean): boolean {
+    const component = this._components.get(getComponentId(type));
+    if (component) {
+      return predicate(component as T);
+    }
+    return false;
   }
 }

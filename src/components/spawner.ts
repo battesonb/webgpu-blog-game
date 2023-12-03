@@ -4,6 +4,8 @@ import {Vec3} from "../math/vec3";
 import {Terrain} from "./terrain";
 import {Transform} from "./transform";
 
+const MAX_LIVE_ENEMIES = 40;
+
 export class Spawner extends Component {
   /**
    * Time in seconds until an enemy should be spawned.
@@ -27,18 +29,25 @@ export class Spawner extends Component {
       return;
     }
     this._nextSpawn -= dt;
-    if (this._nextSpawn <= 0) {
-      this._nextSpawn = this.period;
-      const playerPosition = player.getComponent(Transform)!.position;
-      let position = new Vec3(0, 20, 0);
-      for (let i = 0; i < 10; i++) {
-        position.x = Math.random() * Terrain.SIZE_X;
-        position.z = Math.random() * Terrain.SIZE_Z;
-        if (playerPosition.sub(position).magnitudeSquared() > 16) {
-          break;
-        }
-      }
-      world.addEntities(...newEnemy(world, position));
+    if (this._nextSpawn > 0) {
+      return;
     }
+
+    const enemyCount = Array.from(world.entities).reduce((acc, curr) => acc + (curr.name.startsWith("enemy") ? 1 : 0), 0);
+    if (enemyCount >= MAX_LIVE_ENEMIES) {
+      return;
+    }
+
+    this._nextSpawn = this.period;
+    const playerPosition = player.getComponent(Transform)!.position;
+    let position = new Vec3(0, 20, 0);
+    for (let i = 0; i < 10; i++) {
+      position.x = Math.random() * Terrain.SIZE_X;
+      position.z = Math.random() * Terrain.SIZE_Z;
+      if (playerPosition.sub(position).magnitudeSquared() > 16) {
+        break;
+      }
+    }
+    world.addEntities(...newEnemy(world, position));
   }
 }

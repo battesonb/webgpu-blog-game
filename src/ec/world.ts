@@ -44,6 +44,10 @@ export class World {
     return this._entities.delete(name);
   }
 
+  hasEntity(name: string): boolean {
+    return this._entities.has(name);
+  }
+
   getByName(name: string): Entity | undefined {
     return this._entities.get(name);
   }
