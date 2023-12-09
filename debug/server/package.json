@@ -1,0 +1,17 @@
+{
+  "name": "webgpu-blog-game-debug-server",
+  "private": true,
+  "version": "0.0.0",
+  "description": "This is just a debug server. None of the gameplay logic depends on this server.",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "server": "ts-node-esm src/index.ts"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/ws": "^8.5.10",
+    "ts-node": "^10.9.1",
+    "ws": "^8.14.2"
+  }
+}

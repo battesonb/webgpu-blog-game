@@ -7,7 +7,7 @@ export class Shoot extends BehaviorNode {
   private targetName: string;
 
   constructor(targetName: string) {
-    super("Shoot");
+    super(`Shoot\n(${targetName})`);
     this.targetName = targetName;
   }
 

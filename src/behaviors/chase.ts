@@ -7,7 +7,7 @@ export class Chase extends BehaviorNode {
   private targetName: string;
 
   constructor(targetName: string) {
-    super("Chase");
+    super(`Chase\n(${targetName})`);
     this.targetName = targetName;
   }
 

@@ -42,6 +42,12 @@ export abstract class Component {
   update(_ctx: UpdateContext) {}
 
   /**
+   * Performed after both `preUpdate` and `postUpdate` lifecycle method of
+   * resources.
+   */
+  postUpdate(_ctx: UpdateContext) {}
+
+  /**
    * Runs every frame after update -- should only be used for rendering.
    */
   render(_ctx: RenderContext) {}

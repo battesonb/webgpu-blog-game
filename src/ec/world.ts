@@ -82,6 +82,13 @@ export class World {
     for (const resource of this._resources.values()) {
       resource.postUpdate(ctx);
     }
+
+
+    for (const entity of this._entities.values()) {
+      for (const component of entity.components) {
+        component.postUpdate(ctx);
+      }
+    }
   }
 
   /**

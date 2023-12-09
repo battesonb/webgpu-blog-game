@@ -99,7 +99,7 @@ export abstract class BehaviorNode {
   }
 
   private nameInternal(depth: number, index: number): string {
-    return `${this.name.replace(/\s/g, "_")}_${depth}_${index}`;
+    return `${this.name.replace(/[\s()\n]/g, "_")}_${depth}_${index}`;
   }
 
   private colorForStatus(): string {

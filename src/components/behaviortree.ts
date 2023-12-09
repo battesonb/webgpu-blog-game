@@ -1,8 +1,6 @@
 import {BehaviorNode} from "../behaviornodes/behaviornode";
 import {Component, UpdateContext} from "../ec/component";
 
-const states = new Set<string>();
-
 export class BehaviorTree extends Component {
   private root: BehaviorNode;
 
@@ -18,12 +16,9 @@ export class BehaviorTree extends Component {
       dt: ctx.dt,
       world: ctx.world,
     });
-    const dot = this.dot();
-    const len = states.size;
-    states.add(dot);
-    if (states.size > len) {
-      console.log(dot);
-    }
+  }
+
+  postUpdate(_: UpdateContext): void {
     this.root.maintain();
   }
 

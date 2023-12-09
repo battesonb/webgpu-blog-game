@@ -12,6 +12,7 @@ import {newPlayer} from "./entities/player";
 import {newTerrain} from "./entities/terrain";
 import {Input} from "./resources/input";
 import {newSpawner} from "./entities/spawner";
+import {DebugSocket} from "./resources/debug-socket";
 
 const canvas = document.querySelector("canvas")!;
 canvas.width = SCREEN_WIDTH;
@@ -191,6 +192,10 @@ world
   .withResource(projection)
   .withResource(gpuResources)
   .withResource(input);
+
+if (import.meta.env.DEV) {
+  world.withResourceDefault(DebugSocket);
+}
 
 world.addEntities(
   newCamera(),
