@@ -10,7 +10,6 @@ import {Decay} from "../components/decay";
 import {Bullet, BulletKind, BULLET_SPEED} from "../components/bullet";
 import {Body} from "../components/body";
 import {Vec2} from "../math/vec2";
-import {newShadow} from "./shadow";
 
 let bulletCount = 0;
 
@@ -25,9 +24,7 @@ export function newBullet(world: World, kind: BulletKind, position: Vec3, target
     .withComponentDefault(Billboard)
     .withComponent(new Bullet(kind))
     .withComponent(new Decay(5))
-    .withComponent(new Mesh(plane(texture, kind == BulletKind.Player ? 8 : 9)));
+    .withComponent(new Mesh(plane(texture, kind == BulletKind.Player ? 8 : 9, Vec3.fill(2))));
 
-  const shadow = newShadow(world, bullet.name, 0.5);
-
-  return [bullet, shadow];
+  return [bullet];
 }

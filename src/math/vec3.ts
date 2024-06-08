@@ -63,7 +63,6 @@ export class Vec3 {
     return this.map(c => c * value);
   }
 
-
   magnitudeSquared(): number {
     return this.x * this.x + this.y * this.y + this.z * this.z;
   }
@@ -90,6 +89,10 @@ export class Vec3 {
 
   neg(): Vec3 {
     return new Vec3(-this.x, -this.y, -this.z);
+  }
+
+  buffer(): Float32Array {
+    return new Float32Array([...this.rep, 0]);
   }
 
   static unitX(): Vec3 {

@@ -7,16 +7,14 @@ import {Transform} from "./transform";
 
 export class Follow extends Component {
   readonly targetName: string;
-  readonly horizontalOffset: number;
-  readonly verticalOffset: number;
+  readonly offset: Vec3;
   readonly lerpRatio: number;
   private _transform?: Transform;
 
-  constructor(targetName: string, horizontalOffset: number, verticalOffset: number, lerpRatio: number = 0.05) {
+  constructor(targetName: string, offset: Vec3, lerpRatio: number = 0.05) {
     super();
     this.targetName = targetName;
-    this.horizontalOffset = horizontalOffset;
-    this.verticalOffset = verticalOffset;
+    this.offset = offset;
     this.lerpRatio = lerpRatio;
   }
 
@@ -43,8 +41,8 @@ export class Follow extends Component {
   
   private lerpToTarget(target: Vec3, t: number) {
     const transform = this._transform!;
-    transform.position.x = this.horizontalOffset + lerp(transform.position.x - this.horizontalOffset, target.x, t);
-    transform.position.z = this.horizontalOffset + lerp(transform.position.z - this.horizontalOffset, target.z, t);
-    transform.position.y = this.verticalOffset + lerp(transform.position.y - this.verticalOffset, target.y, t);
+    transform.position.x = this.offset.x + lerp(transform.position.x - this.offset.x, target.x, t);
+    transform.position.y = this.offset.y + lerp(transform.position.y - this.offset.y, target.y, t);
+    transform.position.z = this.offset.z + lerp(transform.position.z - this.offset.z, target.z, t);
   }
 }

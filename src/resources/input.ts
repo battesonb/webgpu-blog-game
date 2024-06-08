@@ -84,9 +84,8 @@ export class Input extends Resource {
     const z = mouseWorldPosition.z / mouseWorldPosition.w;
     this._mouseWorldPosition = new Vec3(x, y, z);
 
-    // const cameraPosition = world.getByName("camera")!.getComponent(Transform)!.position;
-    // const direction = this._mouseWorldPosition.sub(cameraPosition).normal();
-    const direction = world.getByName("camera")!.getComponent(Camera)!.dir();
+    const cameraPosition = world.getByName("camera")!.getComponent(Transform)!.position;
+    const direction = this._mouseWorldPosition.sub(cameraPosition).normal();
     let mousePositionOnGround = this._mouseWorldPosition;
     const terrain = world.getByName("terrain")!.getComponent(Terrain)!;
     let i = 0;

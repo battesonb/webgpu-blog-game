@@ -35,7 +35,7 @@ export class Entity {
     return this;
   }
 
-  getComponent<T extends Component>(type: { new(): T }): T | undefined {
+  getComponent<T extends Component>(type: { new(...args: any[]): T }): T | undefined {
     const component = this._components.get(getComponentId(type));
     if (component) {
       return component as T;

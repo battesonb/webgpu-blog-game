@@ -10,7 +10,6 @@ import {Vec3} from "../math/vec3";
 import {Turret} from "../components/turret";
 import {BulletKind} from "../components/bullet";
 import {Body} from "../components/body";
-import {newShadow} from "./shadow";
 
 let enemyCount = 0;
 
@@ -26,7 +25,5 @@ export function newEnemy(world: World, position: Vec3): Entity[] {
     .withComponent(new Turret(BulletKind.Enemy, 1))
     .withComponent(new Mesh(plane(texture, 7)));
 
-  const shadow = newShadow(world, enemy.name);
-
-  return [enemy, shadow];
+  return [enemy];
 }

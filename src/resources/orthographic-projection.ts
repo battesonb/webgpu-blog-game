@@ -1,7 +1,7 @@
-import {Resource} from "../ec/resource";
+import {Component} from "../ec/component";
 import {Mat4} from "../math/mat4";
 
-export class OrthographicProjection extends Resource {
+export class OrthographicProjection extends Component {
   left: number;
   right: number;
   top: number;

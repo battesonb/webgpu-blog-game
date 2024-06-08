@@ -4,14 +4,16 @@ import {Transform} from "../components/transform";
 import {Entity} from "../ec/entity";
 import {toRadians} from "../math/helpers";
 import {Vec3} from "../math/vec3";
+import {OrthographicProjection} from "../resources/orthographic-projection";
 
-export function newCamera(): Entity {
+export function newDirectionalLight(): Entity {
   const transform = new Transform();
   const camera = new Camera();
-  camera.yaw = toRadians(45);
-  camera.pitch = toRadians(-45);
-  return new Entity("camera")
+  camera.yaw = toRadians(15);
+  camera.pitch = toRadians(-35);
+  return new Entity("directionalLight")
+    .withComponent(new OrthographicProjection(-20, 20, -20, 20, 0.1, 500))
     .withComponent(transform)
-    .withComponent(new Follow("player", new Vec3(14, 20, 14)))
+    .withComponent(new Follow("camera", new Vec3(-10, 0, 20)))
     .withComponent(camera);
 }

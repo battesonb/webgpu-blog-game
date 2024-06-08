@@ -1,10 +1,11 @@
 import {assertDefined} from "./assertions";
 import "./style.css";
 import shaderSource from "./shader.wgsl?raw";
+import shadowShaderSource from "./shadows.wgsl?raw";
 import {createDepthTexture, webGpuTextureFromUrl} from "./texture";
 import {PerspectiveProjection} from "./resources/perspective-projection";
 import {toRadians} from "./math/helpers";
-import {SCREEN_HEIGHT, SCREEN_WIDTH} from "./config";
+import {DEPTH_TEXTURE_SIZE, SCREEN_HEIGHT, SCREEN_WIDTH} from "./config";
 import {GpuResources} from "./resources/gpu-resources";
 import {World} from "./ec/world";
 import {newCamera} from "./entities/camera";
@@ -12,7 +13,7 @@ import {newPlayer} from "./entities/player";
 import {newTerrain} from "./entities/terrain";
 import {Input} from "./resources/input";
 import {newSpawner} from "./entities/spawner";
-import {OrthographicProjection} from "./resources/orthographic-projection";
+import {newDirectionalLight} from "./entities/directional-light";
 
 const canvas = document.querySelector("canvas")!;
 canvas.width = SCREEN_WIDTH;
@@ -31,9 +32,7 @@ context.configure({
   format: canvasFormat,
 });
 
-// const projection = new PerspectiveProjection(SCREEN_WIDTH, SCREEN_HEIGHT, toRadians(35), 0.1, 500);
-const projection = new OrthographicProjection(-10, 10, -10, 10, 0.1, 500);
-const viewProj = projection.matrix();
+const projection = new PerspectiveProjection(SCREEN_WIDTH, SCREEN_HEIGHT, toRadians(35), 0.1, 500);
 
 const texture = await webGpuTextureFromUrl(device, "./tileset.png");
 
@@ -93,6 +92,7 @@ const instanceBufferLayout: GPUVertexBufferLayout = {
 const bindGroupLayout = device.createBindGroupLayout({
   label: "bind group layout",
   entries: [
+    // Texture atlas
     {
       binding: 0,
       visibility: GPUShaderStage.FRAGMENT,
@@ -109,7 +109,44 @@ const bindGroupLayout = device.createBindGroupLayout({
       buffer: {
         type: "uniform"
       },
-    }
+    },
+    // Shadow map
+    {
+      binding: 3,
+      visibility: GPUShaderStage.FRAGMENT,
+      texture: {
+        sampleType: "depth",
+      },
+    },
+    {
+      binding: 4,
+      visibility: GPUShaderStage.FRAGMENT,
+      sampler: {},
+    },
+  ]
+});
+
+const shadowBindGroupLayout = device.createBindGroupLayout({
+  label: "bind group layout",
+  entries: [
+    // Texture atlas
+    {
+      binding: 0,
+      visibility: GPUShaderStage.FRAGMENT,
+      texture: {},
+    },
+    {
+      binding: 1,
+      visibility: GPUShaderStage.FRAGMENT,
+      sampler: {},
+    },
+    {
+      binding: 2,
+      visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+      buffer: {
+        type: "uniform"
+      },
+    },
   ]
 });
 
@@ -118,9 +155,43 @@ const pipelineLayout = device.createPipelineLayout({
   bindGroupLayouts: [bindGroupLayout],
 });
 
+const shadowPipelineLayout = device.createPipelineLayout({
+  label: "shadow pipeline layout",
+  bindGroupLayouts: [shadowBindGroupLayout],
+});
+
 const shaderModule = device.createShaderModule({
   label: "shader module",
   code: shaderSource,
+});
+
+const shadowShaderModule = device.createShaderModule({
+  label: "shadow shader module",
+  code: shadowShaderSource,
+});
+
+const shadowPipeline = device.createRenderPipeline({
+  vertex: {
+    module: shadowShaderModule,
+    entryPoint: "vertexMain",
+    buffers: [vertexBufferLayout, instanceBufferLayout],
+  },
+  fragment: {
+    module: shadowShaderModule,
+    entryPoint: "fragmentMain",
+    targets: [],
+  },
+  layout: shadowPipelineLayout,
+  depthStencil: {
+    depthCompare: "less",
+    depthWriteEnabled: true,
+    format: "depth32float",
+  },
+  primitive: {
+    topology: "triangle-list",
+    frontFace: "ccw",
+    cullMode: "none",
+  },
 });
 
 const pipeline = device.createRenderPipeline({
@@ -156,10 +227,19 @@ const view = texture.createView({
   mipLevelCount: 1,
 });
 
+const shadowDepthTexture = await createDepthTexture(device, DEPTH_TEXTURE_SIZE, DEPTH_TEXTURE_SIZE);
+const shadowDepthView = shadowDepthTexture.createView();
+const shadowDepthSampler = device.createSampler({
+  magFilter: "linear",
+  minFilter: "linear",
+});
+
 const depthTexture = await createDepthTexture(device, SCREEN_WIDTH, SCREEN_HEIGHT);
 const depthView = depthTexture.createView();
 
-const uniformsArray = viewProj.buffer();
+const gpuResources = new GpuResources(device, texture);
+
+const uniformsArray = gpuResources.uniforms();
 const uniformsBuffer = device.createBuffer({
   label: "uniforms buffer",
   size: uniformsArray.byteLength,
@@ -171,6 +251,7 @@ const bindGroup = device.createBindGroup({
   label: "bind group",
   layout: bindGroupLayout,
   entries: [
+    // Texture atlas
     {
       binding: 0,
       resource: view,
@@ -182,11 +263,39 @@ const bindGroup = device.createBindGroup({
     {
       binding: 2,
       resource: {buffer: uniformsBuffer},
-    }
+    },
+    // Shadow map
+    {
+      binding: 3,
+      resource: shadowDepthView,
+    },
+    {
+      binding: 4,
+      resource: shadowDepthSampler,
+    },
   ],
 });
 
-const gpuResources = new GpuResources(device, texture);
+const shadowBindGroup = device.createBindGroup({
+  label: "bind group",
+  layout: shadowBindGroupLayout,
+  entries: [
+    // Texture atlas
+    {
+      binding: 0,
+      resource: view,
+    },
+    {
+      binding: 1,
+      resource: sampler,
+    },
+    {
+      binding: 2,
+      resource: {buffer: uniformsBuffer},
+    },
+  ],
+});
+
 const world = new World();
 const input = new Input(canvas);
 world
@@ -196,6 +305,7 @@ world
 
 world.addEntities(
   newCamera(),
+  newDirectionalLight(),
   ...newPlayer(world),
   newTerrain(),
   newSpawner(),
@@ -217,12 +327,35 @@ function update(now: number) {
 function render(now: number) {
   const dt = (now - lastTime) / 1000;
   const gpuResources = world.getResource(GpuResources)!;
-  const viewProj = gpuResources.viewProj!;
-
-  const uniformsArray = viewProj.buffer();
+  const uniformsArray = gpuResources.uniforms();
   device.queue.writeBuffer(uniformsBuffer, 0, uniformsArray);
 
   const encoder = device.createCommandEncoder();
+
+  // shadow map pass
+  {
+    const pass = encoder.beginRenderPass({
+      colorAttachments: [],
+      depthStencilAttachment: {
+        view: shadowDepthView,
+        depthClearValue: 1,
+        depthLoadOp: "clear",
+        depthStoreOp: "store",
+      },
+    });
+
+    pass.setPipeline(shadowPipeline);
+    pass.setBindGroup(0, shadowBindGroup);
+
+    world.render({
+      dt,
+      pass,
+    });
+
+    pass.end();
+  }
+
+  // render pass
   {
     const pass = encoder.beginRenderPass({
       colorAttachments: [{
@@ -230,7 +363,6 @@ function render(now: number) {
         storeOp: "store",
         clearValue: [0.54, 0.7, 1.0, 1.0],
         loadOp: "clear",
-
       }],
       depthStencilAttachment: {
         view: depthView,
@@ -251,10 +383,8 @@ function render(now: number) {
     pass.end();
   }
 
-  {
-    const commandBuffer = encoder.finish();
-    device.queue.submit([commandBuffer]);
-  }
+  const commandBuffer = encoder.finish();
+  device.queue.submit([commandBuffer]);
 }
 
 let lastTime = performance.now();

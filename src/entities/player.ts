@@ -7,7 +7,6 @@ import {GpuResources} from "../resources/gpu-resources";
 import {PlayerController} from "../components/player-controller";
 import {Terrain} from "../components/terrain";
 import {Body} from "../components/body";
-import {newShadow} from "./shadow";
 import {plane} from "../meshes";
 import {Turret} from "../components/turret";
 import {BulletKind} from "../components/bullet";
@@ -26,7 +25,5 @@ export function newPlayer(world: World): Entity[] {
     .withComponent(new Turret(BulletKind.Player, 0.2))
     .withComponent(new Mesh(plane(texture, 6)));
 
-  const shadow = newShadow(world, "player");
-
-  return [player, shadow];
+  return [player];
 }
