@@ -29,7 +29,7 @@ struct Uniforms {
 @group(0) @binding(3) var shadowTextureView: texture_depth_2d;
 @group(0) @binding(4) var shadowTextureSampler: sampler;
 
-const BIAS = 0.0005;
+const BIAS = 0.002;
 
 @vertex
 fn vertexMain(in: VertexInput, instance: InstanceInput) -> VertexOutput {
@@ -49,11 +49,14 @@ fn vertexMain(in: VertexInput, instance: InstanceInput) -> VertexOutput {
   return output;
 }
 
+const SHADOW_STEPS = 3;
+const SHADOW_TOTAL = (2 * SHADOW_STEPS + 1) * (2 * SHADOW_STEPS + 1);
+
 fn shadow(in: VertexOutput) -> f32 {
   var shadow = 0.0;
   let texel_size = vec2f(1.0) / vec2f(textureDimensions(shadowTextureView, 0));
-  for (var x = -1; x <= 1; x++) {
-    for (var y = -1; y <= 1; y++) {
+  for (var x = -SHADOW_STEPS; x <= SHADOW_STEPS; x++) {
+    for (var y = -SHADOW_STEPS; y <= SHADOW_STEPS; y++) {
       let uv = vec2f(
         (in.light_pos.x + 1.0) * 0.5,
         (-in.light_pos.y + 1.0) * 0.5,
@@ -69,7 +72,7 @@ fn shadow(in: VertexOutput) -> f32 {
     }
   }
 
-  return shadow / 9.0;
+  return shadow / SHADOW_TOTAL;
 }
 
 @fragment

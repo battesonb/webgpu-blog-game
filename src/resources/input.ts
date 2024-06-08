@@ -1,4 +1,3 @@
-import {Camera} from "../components/camera";
 import {Terrain} from "../components/terrain";
 import {Transform} from "../components/transform";
 import {UpdateContext} from "../ec/component";

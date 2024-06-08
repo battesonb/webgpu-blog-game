@@ -47,6 +47,18 @@ export class Vec4 {
     return this.x * other.x + this.y * other.y + this.z * other.z + this.w * other.w;
   }
 
+  map(map: (component: number) => number): Vec4 {
+    return new Vec4(map(this.x), map(this.y), map(this.z), map(this.w));
+  }
+
+  add(other: Vec4): Vec4 {
+    return new Vec4(this.x + other.x, this.y + other.y, this.z + other.z, this.w + other.w);
+  }
+
+  div(scalar: number): Vec4 {
+    return this.map(c => c / scalar);
+  }
+
   static zero(): Vec4 {
     return new Vec4(0, 0, 0, 0);
   }

@@ -32,7 +32,7 @@ context.configure({
   format: canvasFormat,
 });
 
-const projection = new PerspectiveProjection(SCREEN_WIDTH, SCREEN_HEIGHT, toRadians(35), 0.1, 500);
+const projection = new PerspectiveProjection(SCREEN_WIDTH, SCREEN_HEIGHT, toRadians(35), 0.1, 225);
 
 const texture = await webGpuTextureFromUrl(device, "./tileset.png");
 
