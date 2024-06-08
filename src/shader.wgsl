@@ -29,6 +29,8 @@ struct Uniforms {
 @group(0) @binding(3) var shadowTextureView: texture_depth_2d;
 @group(0) @binding(4) var shadowTextureSampler: sampler;
 
+const BIAS = 0.0005;
+
 @vertex
 fn vertexMain(in: VertexInput, instance: InstanceInput) -> VertexOutput {
   var output: VertexOutput;
@@ -48,21 +50,26 @@ fn vertexMain(in: VertexInput, instance: InstanceInput) -> VertexOutput {
 }
 
 fn shadow(in: VertexOutput) -> f32 {
-  let u = (in.light_pos.x + 1) * 0.5;
-  let v = (-1 * in.light_pos.y + 1) * 0.5;
-  let lightDepth = textureSample(shadowTextureView, shadowTextureSampler, vec2f(u, v));
+  var shadow = 0.0;
+  let texel_size = vec2f(1.0) / vec2f(textureDimensions(shadowTextureView, 0));
+  for (var x = -1; x <= 1; x++) {
+    for (var y = -1; y <= 1; y++) {
+      let uv = vec2f(
+        (in.light_pos.x + 1.0) * 0.5,
+        (-in.light_pos.y + 1.0) * 0.5,
+      );
+      let light_depth = textureSample(shadowTextureView, shadowTextureSampler, uv + vec2f(f32(x), f32(y)) * texel_size);
 
-  if (u < 0.0 || v < 0.0 || u >= 1.0 || v >= 1.0) {
-    // Set this to zero to debug the orthographic frustum
-    return 1.0;
+      if (uv.x < 0.0 || uv.y < 0.0 || uv.x >= 1.0 || uv.y >= 1.0) {
+        // Set this to zero to debug the orthographic frustum
+        shadow += 1.0;
+      } else if (in.light_pos.z < light_depth + BIAS) {
+        shadow += 1.0;
+      }
+    }
   }
 
-  let bias = 0.0005;
-  if (in.light_pos.z < lightDepth + bias) {
-    return 1.0;
-  }
-
-  return 0.0;
+  return shadow / 9.0;
 }
 
 @fragment
