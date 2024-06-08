@@ -1,3 +1,4 @@
+import {Camera} from "../components/camera";
 import {Terrain} from "../components/terrain";
 import {Transform} from "../components/transform";
 import {UpdateContext} from "../ec/component";
@@ -83,15 +84,17 @@ export class Input extends Resource {
     const z = mouseWorldPosition.z / mouseWorldPosition.w;
     this._mouseWorldPosition = new Vec3(x, y, z);
 
-    const cameraPosition = world.getByName("camera")!.getComponent(Transform)!.position;
-    const direction = this._mouseWorldPosition.sub(cameraPosition).normal();
-    let mousePositionOnGround = cameraPosition;
+    // const cameraPosition = world.getByName("camera")!.getComponent(Transform)!.position;
+    // const direction = this._mouseWorldPosition.sub(cameraPosition).normal();
+    const direction = world.getByName("camera")!.getComponent(Camera)!.dir();
+    let mousePositionOnGround = this._mouseWorldPosition;
     const terrain = world.getByName("terrain")!.getComponent(Terrain)!;
-    for (let i = 0; i < 75; i++) {
+    let i = 0;
+    for (i = 0; i < 100; i++) {
       if (terrain.getBlock(mousePositionOnGround)) {
         break;
       }
-      mousePositionOnGround = mousePositionOnGround.add(direction.mul(0.5));
+      mousePositionOnGround = mousePositionOnGround.add(direction);
     }
 
     this._mouseWorldPickedPosition = mousePositionOnGround;

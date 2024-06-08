@@ -3,7 +3,8 @@ import {Transform} from "../components/transform";
 import {UpdateContext} from "../ec/component";
 import {Resource} from "../ec/resource";
 import {Mat4} from "../math/mat4";
-import {Projection} from "./projection";
+import {OrthographicProjection} from "./orthographic-projection";
+import {PerspectiveProjection} from "./perspective-projection";
 
 export class GpuResources extends Resource {
   device: GPUDevice;
@@ -21,7 +22,8 @@ export class GpuResources extends Resource {
 
   preUpdate(ctx: UpdateContext): void {
     const {world} = ctx;
-    const projection = world.getResource(Projection)!;
+    // const projection = world.getResource(PerspectiveProjection)!;
+    const projection = world.getResource(OrthographicProjection)!;
     const camera = world.getByName("camera")!;
     const cameraComp = camera.getComponent(Camera)!;
     const cameraTrans = camera.getComponent(Transform)!;

@@ -2,7 +2,7 @@ import {assertDefined} from "./assertions";
 import "./style.css";
 import shaderSource from "./shader.wgsl?raw";
 import {createDepthTexture, webGpuTextureFromUrl} from "./texture";
-import {Projection} from "./resources/projection";
+import {PerspectiveProjection} from "./resources/perspective-projection";
 import {toRadians} from "./math/helpers";
 import {SCREEN_HEIGHT, SCREEN_WIDTH} from "./config";
 import {GpuResources} from "./resources/gpu-resources";
@@ -12,6 +12,7 @@ import {newPlayer} from "./entities/player";
 import {newTerrain} from "./entities/terrain";
 import {Input} from "./resources/input";
 import {newSpawner} from "./entities/spawner";
+import {OrthographicProjection} from "./resources/orthographic-projection";
 
 const canvas = document.querySelector("canvas")!;
 canvas.width = SCREEN_WIDTH;
@@ -30,7 +31,8 @@ context.configure({
   format: canvasFormat,
 });
 
-const projection = new Projection(SCREEN_WIDTH, SCREEN_HEIGHT, toRadians(35), 0.1, 500);
+// const projection = new PerspectiveProjection(SCREEN_WIDTH, SCREEN_HEIGHT, toRadians(35), 0.1, 500);
+const projection = new OrthographicProjection(-10, 10, -10, 10, 0.1, 500);
 const viewProj = projection.matrix();
 
 const texture = await webGpuTextureFromUrl(device, "./tileset.png");
