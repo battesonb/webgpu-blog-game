@@ -10,6 +10,7 @@ import {Body} from "../components/body";
 import {plane} from "../meshes";
 import {Turret} from "../components/turret";
 import {BulletKind} from "../components/bullet";
+import {Vec3} from "../math/vec3";
 
 export function newPlayer(world: World): Entity[] {
   const transform = new Transform();
@@ -23,7 +24,7 @@ export function newPlayer(world: World): Entity[] {
     .withComponentDefault(Billboard)
     .withComponentDefault(PlayerController)
     .withComponent(new Turret(BulletKind.Player, 0.2))
-    .withComponent(new Mesh(plane(texture, 6)));
+    .withComponent(new Mesh(plane(texture, 6, Vec3.fill(1.4))));
 
   return [player];
 }

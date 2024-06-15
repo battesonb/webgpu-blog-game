@@ -46,12 +46,13 @@ export class Mesh extends Component {
     const name = this.entity.name;
     {
       const identity = Mat4.identity().buffer();
+      const instanceData = new Float32Array([...identity, ...identity]);
       this.instanceBuffer = device.createBuffer({
         label: `${name} instance buffer`,
-        size: identity.buffer.byteLength,
+        size: instanceData.buffer.byteLength,
         usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
       });
-      device.queue.writeBuffer(this.instanceBuffer, 0, identity);
+      device.queue.writeBuffer(this.instanceBuffer, 0, instanceData);
     }
 
     this.createVertexAndIndexBuffers(device);
@@ -96,7 +97,15 @@ export class Mesh extends Component {
 
     const transform = this.getComponent(Transform);
     assertDefined(transform, "Transform must exist on entity with a mesh");
-    const array = new Float32Array(transform.matrix().buffer());
+    const model = transform.matrix()
+
+    // Remove the translation, as normals should not be affected by translation
+    const modelWithoutTranslation = model.clone();
+    modelWithoutTranslation.rows[3].x = 0;
+    modelWithoutTranslation.rows[3].y = 0;
+    modelWithoutTranslation.rows[3].z = 0;
+
+    const array = new Float32Array([...model.buffer(), ...modelWithoutTranslation.inverse().transpose().buffer()]);
     device.queue.writeBuffer(this.instanceBuffer!, 0, array);
   }
 

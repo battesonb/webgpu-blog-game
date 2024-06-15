@@ -25,6 +25,7 @@ const corners = [
 export class GpuResources extends Resource {
   device: GPUDevice;
   texture: GPUTexture;
+  lightDir: Vec3;
   lightView: Mat4;
   lightViewProj: Mat4;
   viewProj: Mat4;
@@ -39,6 +40,7 @@ export class GpuResources extends Resource {
     super();
     this.device = device;
     this.texture = texture;
+    this.lightDir = Vec3.unitY().neg();
     this.lightView = Mat4.identity();
     this.lightViewProj = Mat4.identity();
     this.viewProj = Mat4.identity();
@@ -66,6 +68,8 @@ export class GpuResources extends Resource {
     const directionalLight = world.getByName("directionalLight")!;
     const lightCamera = directionalLight.getComponent(Camera)!;
     const lightTransform = directionalLight.getComponent(Transform)!;
+    this.lightDir = lightCamera.dir();
+
     const total = frustumCorners.reduce((acc, curr) => acc.add(curr), Vec4.zero());
     const average = total.div(frustumCorners.length);
     lightTransform.position = new Vec3(average.x, average.y, average.z);
@@ -97,10 +101,12 @@ export class GpuResources extends Resource {
   uniforms(): Float32Array {
     const viewProj = this.viewProj.buffer();
     const lightProj = this.lightViewProj.buffer();
-    const result = new Float32Array(viewProj.length + lightProj.length);
+    const lightDir = this.lightDir.buffer();
+    const result = new Float32Array(viewProj.length + lightProj.length + lightDir.length);
 
     result.set(viewProj);
     result.set(lightProj, viewProj.length);
+    result.set(lightDir, viewProj.length + lightProj.length);
 
     return result;
   }

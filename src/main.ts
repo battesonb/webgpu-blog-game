@@ -38,53 +38,84 @@ const texture = await webGpuTextureFromUrl(device, "./tileset.png");
 
 const vertexBufferLayout: GPUVertexBufferLayout = {
   stepMode: "vertex",
-  arrayStride: 32,
+  arrayStride: 44,
   attributes: [
     { // pos
       format: "float32x3",
       offset: 0,
       shaderLocation: 0,
     },
-    { // uv
-      format: "float32x2",
+    { // normal
+      format: "float32x3",
       offset: 12,
       shaderLocation: 1,
     },
+    { // uv
+      format: "float32x2",
+      offset: 24,
+      shaderLocation: 2,
+    },
     { // color
       format: "float32x3",
-      offset: 20,
-      shaderLocation: 2,
+      offset: 32,
+      shaderLocation: 3,
     }
   ],
 };
 
 const instanceBufferLayout: GPUVertexBufferLayout = {
   stepMode: "instance",
-  arrayStride: 64,
+  arrayStride: 128,
   attributes: [
+    // Model matrix
     {
       // column #1
       format: "float32x4",
       offset: 0,
-      shaderLocation: 3,
+      shaderLocation: 4,
     },
     {
       // column #2
       format: "float32x4",
       offset: 16,
-      shaderLocation: 4,
+      shaderLocation: 5,
     },
     {
       // column #3
       format: "float32x4",
       offset: 32,
-      shaderLocation: 5,
+      shaderLocation: 6,
     },
     {
       // column #4
       format: "float32x4",
       offset: 48,
-      shaderLocation: 6,
+      shaderLocation: 7,
+    },
+    // Model inverse tranpose matrix
+    {
+      // column #1
+      format: "float32x4",
+      offset: 64,
+      shaderLocation: 8,
+    },
+    {
+      // column #2
+      format: "float32x4",
+      offset: 80,
+      shaderLocation: 9,
+    },
+    {
+      // column #3
+      format: "float32x4",
+      offset: 96,
+      shaderLocation: 10,
+    },
+    {
+      // column #4
+      format: "float32x4",
+      offset: 112,
+      shaderLocation: 11,
     },
   ],
 };

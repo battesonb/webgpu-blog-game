@@ -1,14 +1,19 @@
 struct VertexInput {
   @location(0) pos: vec3f,
-  @location(1) uv: vec2f,
-  @location(2) color: vec3f,
+  @location(1) normal: vec3f,
+  @location(2) uv: vec2f,
+  @location(3) color: vec3f,
 };
 
 struct InstanceInput {
-  @location(3) model_matrix_0: vec4<f32>,
-  @location(4) model_matrix_1: vec4<f32>,
-  @location(5) model_matrix_2: vec4<f32>,
-  @location(6) model_matrix_3: vec4<f32>,
+  @location(4) model_matrix_0: vec4<f32>,
+  @location(5) model_matrix_1: vec4<f32>,
+  @location(6) model_matrix_2: vec4<f32>,
+  @location(7) model_matrix_3: vec4<f32>,
+  @location(8) model_inverse_tranpose_matrix_0: vec4<f32>,
+  @location(9) model_inverse_tranpose_matrix_1: vec4<f32>,
+  @location(10) model_inverse_tranpose_matrix_2: vec4<f32>,
+  @location(11) model_inverse_tranpose_matrix_3: vec4<f32>,
 }
 
 struct VertexOutput {

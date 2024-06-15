@@ -217,6 +217,32 @@ export class Mat4 {
     return this.adjugate().mul((1 / this.determinant()));
   }
 
+  transpose(): Mat4 {
+    const a = this.rows[0];
+    const b = this.rows[1];
+    const c = this.rows[2];
+    const d = this.rows[3];
+    return new Mat4(
+      a.x, b.x, c.x, d.x,
+      a.y, b.y, c.y, d.y,
+      a.z, b.z, c.z, d.z,
+      a.w, b.w, c.w, d.w,
+    );
+  }
+
+  clone(): Mat4 {
+    const a = this.rows[0];
+    const b = this.rows[1];
+    const c = this.rows[2];
+    const d = this.rows[3];
+    return new Mat4(
+      a.x, a.y, a.z, a.w,
+      b.x, b.y, b.z, b.w,
+      c.x, c.y, c.z, c.w,
+      d.x, d.y, d.z, d.w,
+    );
+  }
+
   /**
    * A method for defining a "look-at" matrix for a given position and target in
    * a right-handed coordinate system.
