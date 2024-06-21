@@ -101,9 +101,9 @@ export class Mesh extends Component {
 
     // Remove the translation, as normals should not be affected by translation
     const modelWithoutTranslation = model.clone();
-    modelWithoutTranslation.rows[3].x = 0;
-    modelWithoutTranslation.rows[3].y = 0;
-    modelWithoutTranslation.rows[3].z = 0;
+    modelWithoutTranslation.rows[0].w = 0;
+    modelWithoutTranslation.rows[1].w = 0;
+    modelWithoutTranslation.rows[2].w = 0;
 
     const array = new Float32Array([...model.buffer(), ...modelWithoutTranslation.inverse().transpose().buffer()]);
     device.queue.writeBuffer(this.instanceBuffer!, 0, array);
