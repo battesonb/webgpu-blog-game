@@ -44,6 +44,14 @@ export class Vec2 {
     return this.div(this.magnitude());
   }
 
+  sub(other: Vec2): Vec2 {
+    return new Vec2(this.x - other.x, this.y - other.y);
+  }
+
+  angle(): number {
+    return Math.atan2(this.y, this.x);
+  }
+
   static zero(): Vec2 {
     return new Vec2(0, 0);
   }

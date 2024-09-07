@@ -28,6 +28,12 @@ export class Vec3 {
     return this.rep[2];
   }
 
+  set(other: Vec3) {
+    this.x = other.x;
+    this.y = other.y;
+    this.z = other.z;
+  }
+
   set x(value: number) {
     this.rep[0] = value;
   }

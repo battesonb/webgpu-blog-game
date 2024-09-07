@@ -34,11 +34,13 @@ context.configure({
 
 const projection = new PerspectiveProjection(SCREEN_WIDTH, SCREEN_HEIGHT, toRadians(35), 0.1, 225);
 
-const texture = await webGpuTextureFromUrl(device, "./tileset.png");
+const tileset = await webGpuTextureFromUrl(device, "./tileset.png");
+const tilesetNormal = await webGpuTextureFromUrl(device, "./tileset_normal.png");
+const tilesetGloss = await webGpuTextureFromUrl(device, "./tileset_gloss.png");
 
 const vertexBufferLayout: GPUVertexBufferLayout = {
   stepMode: "vertex",
-  arrayStride: 44,
+  arrayStride: 68,
   attributes: [
     { // pos
       format: "float32x3",
@@ -50,15 +52,25 @@ const vertexBufferLayout: GPUVertexBufferLayout = {
       offset: 12,
       shaderLocation: 1,
     },
-    { // uv
-      format: "float32x2",
+    { // tangent
+      format: "float32x3",
       offset: 24,
       shaderLocation: 2,
     },
+    { // bitangent
+      format: "float32x3",
+      offset: 36,
+      shaderLocation: 3,
+    },
+    { // uv
+      format: "float32x2",
+      offset: 48,
+      shaderLocation: 4,
+    },
     { // color
       format: "float32x3",
-      offset: 32,
-      shaderLocation: 3,
+      offset: 56,
+      shaderLocation: 5,
     }
   ],
 };
@@ -72,50 +84,50 @@ const instanceBufferLayout: GPUVertexBufferLayout = {
       // column #1
       format: "float32x4",
       offset: 0,
-      shaderLocation: 4,
+      shaderLocation: 6,
     },
     {
       // column #2
       format: "float32x4",
       offset: 16,
-      shaderLocation: 5,
+      shaderLocation: 7,
     },
     {
       // column #3
       format: "float32x4",
       offset: 32,
-      shaderLocation: 6,
+      shaderLocation: 8,
     },
     {
       // column #4
       format: "float32x4",
       offset: 48,
-      shaderLocation: 7,
+      shaderLocation: 9,
     },
     // Model inverse tranpose matrix
     {
       // column #1
       format: "float32x4",
       offset: 64,
-      shaderLocation: 8,
+      shaderLocation: 10,
     },
     {
       // column #2
       format: "float32x4",
       offset: 80,
-      shaderLocation: 9,
+      shaderLocation: 11,
     },
     {
       // column #3
       format: "float32x4",
       offset: 96,
-      shaderLocation: 10,
+      shaderLocation: 12,
     },
     {
       // column #4
       format: "float32x4",
       offset: 112,
-      shaderLocation: 11,
+      shaderLocation: 13,
     },
   ],
 };
@@ -123,36 +135,48 @@ const instanceBufferLayout: GPUVertexBufferLayout = {
 const bindGroupLayout = device.createBindGroupLayout({
   label: "bind group layout",
   entries: [
-    // Texture atlas
     {
       binding: 0,
-      visibility: GPUShaderStage.FRAGMENT,
-      texture: {},
+      visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+      buffer: {
+        type: "uniform"
+      },
     },
     {
       binding: 1,
       visibility: GPUShaderStage.FRAGMENT,
       sampler: {},
     },
+    // Texture atlas
     {
       binding: 2,
-      visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
-      buffer: {
-        type: "uniform"
-      },
+      visibility: GPUShaderStage.FRAGMENT,
+      texture: {},
+    },
+    // Normal texture
+    {
+      binding: 3,
+      visibility: GPUShaderStage.FRAGMENT,
+      texture: {},
+    },
+    // Gloss texture
+    {
+      binding: 4,
+      visibility: GPUShaderStage.FRAGMENT,
+      texture: {},
+    },
+    {
+      binding: 5,
+      visibility: GPUShaderStage.FRAGMENT,
+      sampler: {},
     },
     // Shadow map
     {
-      binding: 3,
+      binding: 6,
       visibility: GPUShaderStage.FRAGMENT,
       texture: {
         sampleType: "depth",
       },
-    },
-    {
-      binding: 4,
-      visibility: GPUShaderStage.FRAGMENT,
-      sampler: {},
     },
   ]
 });
@@ -160,23 +184,23 @@ const bindGroupLayout = device.createBindGroupLayout({
 const shadowBindGroupLayout = device.createBindGroupLayout({
   label: "bind group layout",
   entries: [
-    // Texture atlas
     {
       binding: 0,
-      visibility: GPUShaderStage.FRAGMENT,
-      texture: {},
+      visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+      buffer: {
+        type: "uniform"
+      },
     },
     {
       binding: 1,
       visibility: GPUShaderStage.FRAGMENT,
       sampler: {},
     },
+    // Texture atlas
     {
       binding: 2,
-      visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
-      buffer: {
-        type: "uniform"
-      },
+      visibility: GPUShaderStage.FRAGMENT,
+      texture: {},
     },
   ]
 });
@@ -253,7 +277,17 @@ const sampler = device.createSampler({
   minFilter: "nearest",
 });
 
-const view = texture.createView({
+const tilesetView = tileset.createView({
+  baseMipLevel: 0,
+  mipLevelCount: 1,
+});
+
+const tilesetNormalView = tilesetNormal.createView({
+  baseMipLevel: 0,
+  mipLevelCount: 1,
+});
+
+const tilesetGlossView = tilesetGloss.createView({
   baseMipLevel: 0,
   mipLevelCount: 1,
 });
@@ -268,7 +302,7 @@ const shadowDepthSampler = device.createSampler({
 const depthTexture = await createDepthTexture(device, SCREEN_WIDTH, SCREEN_HEIGHT);
 const depthView = depthTexture.createView();
 
-const gpuResources = new GpuResources(device, texture);
+const gpuResources = new GpuResources(device, tileset);
 
 const uniformsArray = gpuResources.uniforms();
 const uniformsBuffer = device.createBuffer({
@@ -282,10 +316,9 @@ const bindGroup = device.createBindGroup({
   label: "bind group",
   layout: bindGroupLayout,
   entries: [
-    // Texture atlas
     {
       binding: 0,
-      resource: view,
+      resource: {buffer: uniformsBuffer},
     },
     {
       binding: 1,
@@ -293,16 +326,23 @@ const bindGroup = device.createBindGroup({
     },
     {
       binding: 2,
-      resource: {buffer: uniformsBuffer},
+      resource: tilesetView,
     },
-    // Shadow map
     {
       binding: 3,
-      resource: shadowDepthView,
+      resource: tilesetNormalView,
     },
     {
       binding: 4,
+      resource: tilesetGlossView,
+    },
+    {
+      binding: 5,
       resource: shadowDepthSampler,
+    },
+    {
+      binding: 6,
+      resource: shadowDepthView,
     },
   ],
 });
@@ -311,10 +351,9 @@ const shadowBindGroup = device.createBindGroup({
   label: "bind group",
   layout: shadowBindGroupLayout,
   entries: [
-    // Texture atlas
     {
       binding: 0,
-      resource: view,
+      resource: {buffer: uniformsBuffer},
     },
     {
       binding: 1,
@@ -322,7 +361,7 @@ const shadowBindGroup = device.createBindGroup({
     },
     {
       binding: 2,
-      resource: {buffer: uniformsBuffer},
+      resource: tilesetView,
     },
   ],
 });
@@ -366,6 +405,7 @@ function render(now: number) {
   // shadow map pass
   {
     const pass = encoder.beginRenderPass({
+      label: "shadow",
       colorAttachments: [],
       depthStencilAttachment: {
         view: shadowDepthView,
@@ -389,6 +429,7 @@ function render(now: number) {
   // render pass
   {
     const pass = encoder.beginRenderPass({
+      label: "render",
       colorAttachments: [{
         view: context.getCurrentTexture().createView(),
         storeOp: "store",

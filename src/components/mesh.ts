@@ -1,6 +1,7 @@
 import {assertDefined} from "../assertions";
 import {Component, InitContext, RenderContext, UpdateContext} from "../ec/component";
 import {Mat4} from "../math/mat4";
+import {Vec3} from "../math/vec3";
 import {GpuResources} from "../resources/gpu-resources";
 import {Vertex} from "../vertex";
 import {Transform} from "./transform";
@@ -59,6 +60,8 @@ export class Mesh extends Component {
   }
 
   private createVertexAndIndexBuffers(device: GPUDevice) {
+    this.updateVertexNormalsAndTangents();
+
     const name = this.entity.name;
     {
       const vertexArray = new Float32Array(this._vertices.map(v => v.array()).flat());
@@ -87,6 +90,65 @@ export class Mesh extends Component {
     this._shouldUpdate = false;
   }
 
+  /**
+   * Configure all vertex tangent and bi-tangent vectors of this mesh.
+   */
+  private updateVertexNormalsAndTangents() {
+    for (let i = 0; i < this._vertices.length; i += 4) {
+      const a = this._vertices[i];
+      const b = this._vertices[i + 1];
+      const c = this._vertices[i + 2];
+      const d = this._vertices[i + 3];
+
+      // We use quads, so we split each iteration up into two triangles to make
+      // the calculation easier.
+      this.updateTriangleTangents(a, b, c);
+      this.updateTriangleTangents(a, c, d);
+    }
+  }
+
+  /**
+   * Given a vertices representing a triangle in anti-clockwise winding order,
+   * and UV coordinates that start at the top-left of an image, set the vertex
+   * tangent and bi-tangent vectors.
+   */
+  private updateTriangleTangents(a: Vertex, b: Vertex, c: Vertex) {
+    const edge1 = b.position.sub(a.position);
+    const deltaUv1 = b.uv.sub(a.uv);
+
+    const edge2 = c.position.sub(a.position);
+    const deltaUv2 = c.uv.sub(a.uv);
+
+    const determinant = 1.0 / (deltaUv1.y * deltaUv2.x - deltaUv1.x * deltaUv2.y);
+
+    const tangent = new Vec3(
+      -deltaUv2.y * edge1.x + deltaUv1.y * edge2.x,
+      -deltaUv2.y * edge1.y + deltaUv1.y * edge2.y,
+      -deltaUv2.y * edge1.z + deltaUv1.y * edge2.z,
+    ).mul(determinant).normal();
+
+    const bitangent = new Vec3(
+      -deltaUv2.x * edge1.x + deltaUv1.x * edge2.x,
+      -deltaUv2.x * edge1.y + deltaUv1.x * edge2.y,
+      -deltaUv2.x * edge1.z + deltaUv1.x * edge2.z,
+    ).mul(determinant).normal();
+
+    const normal = tangent.cross(bitangent).normal();
+
+    a.tangent.set(tangent);
+    b.tangent.set(tangent);
+    c.tangent.set(tangent);
+
+    a.bitangent.set(bitangent);
+    b.bitangent.set(bitangent);
+    c.bitangent.set(bitangent);
+
+    a.normal.set(normal);
+    b.normal.set(normal);
+    c.normal.set(normal);
+
+  }
+
   update(ctx: UpdateContext): void {
     const {world} = ctx;
     const device = world.getResource(GpuResources)!.device;
@@ -110,7 +172,7 @@ export class Mesh extends Component {
   }
 
   render(ctx: RenderContext) {
-    const { pass } = ctx;
+    const {pass} = ctx;
     pass.setVertexBuffer(0, this.vertexBuffer!);
     pass.setVertexBuffer(1, this.instanceBuffer!);
     pass.setIndexBuffer(this.indexBuffer!, "uint32");

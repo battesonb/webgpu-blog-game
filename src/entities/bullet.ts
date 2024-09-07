@@ -24,7 +24,7 @@ export function newBullet(world: World, kind: BulletKind, position: Vec3, target
     .withComponentDefault(Billboard)
     .withComponent(new Bullet(kind))
     .withComponent(new Decay(5))
-    .withComponent(new Mesh(plane(texture, kind == BulletKind.Player ? 8 : 9, Vec3.fill(2))));
+    .withComponent(new Mesh(plane(texture, kind == BulletKind.Player ? 8 : 9, Vec3.fill(1.2))));
 
   return [bullet];
 }

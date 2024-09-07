@@ -42,4 +42,9 @@ export class Entity {
     }
     return undefined;
   }
+
+  hasComponent<T extends Component>(type: { new(...args: any[]): T }): boolean {
+    const component = this._components.get(getComponentId(type));
+    return component !== undefined;
+  }
 }

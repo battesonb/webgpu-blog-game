@@ -23,7 +23,7 @@ export function newEnemy(world: World, position: Vec3): Entity[] {
     .withComponentDefault(EnemyBrain)
     .withComponentDefault(Billboard)
     .withComponent(new Turret(BulletKind.Enemy, 1))
-    .withComponent(new Mesh(plane(texture, 7, Vec3.fill(1.4))));
+    .withComponent(new Mesh(plane(texture, 7, Vec3.fill(1))));
 
   return [enemy];
 }
