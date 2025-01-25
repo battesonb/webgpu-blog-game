@@ -1,20 +1,11 @@
-import {assertDefined} from "../assertions";
-import {Component, InitContext, RenderContext, UpdateContext} from "../ec/component";
-import {Mat4} from "../math/mat4";
-import {Vec3} from "../math/vec3";
-import {GpuResources} from "../resources/gpu-resources";
-import {Vertex} from "../vertex";
-import {Transform} from "./transform";
+import {Vec3} from "./math/vec3";
+import {Vertex} from "./vertex";
 
-export class Mesh extends Component {
+export class Mesh {
   /**
    * Vertex data.
    */
   private vertexBuffer?: GPUBuffer;
-  /**
-   * Transform/instance-specific data.
-   */
-  private instanceBuffer?: GPUBuffer;
   /**
    * Indices into the vertex buffer.
    */
@@ -29,11 +20,15 @@ export class Mesh extends Component {
    * frame.
    */
   private _shouldUpdate: boolean;
+  /**
+   * A name for this mesh.
+   */
+  private _name: string;
 
-  constructor(vertices: Vertex[] = []) {
-    super();
+  constructor(name: string, vertices: Vertex[] = []) {
     this._vertices = vertices;
-    this._shouldUpdate = false;
+    this._shouldUpdate = true;
+    this._name = name;
   }
 
   set vertices(value: Vertex[]) {
@@ -41,35 +36,18 @@ export class Mesh extends Component {
     this._vertices = value;
   }
 
-  init(ctx: InitContext): void {
-    const {world} = ctx;
-    const device = world.getResource(GpuResources)!.device;
-    const name = this.entity.name;
-    {
-      const identity = Mat4.identity().buffer();
-      const instanceData = new Float32Array([...identity, ...identity]);
-      this.instanceBuffer = device.createBuffer({
-        label: `${name} instance buffer`,
-        size: instanceData.buffer.byteLength,
-        usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
-      });
-      device.queue.writeBuffer(this.instanceBuffer, 0, instanceData);
-    }
-
-    this.createVertexAndIndexBuffers(device);
-  }
-
   private createVertexAndIndexBuffers(device: GPUDevice) {
     this.updateVertexNormalsAndTangents();
 
-    const name = this.entity.name;
     {
       const vertexArray = new Float32Array(this._vertices.map(v => v.array()).flat());
-      this.vertexBuffer = device.createBuffer({
-        label: `${name} vertex buffer`,
-        size: vertexArray.buffer.byteLength,
-        usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
-      });
+      if (!this.vertexBuffer || this.vertexBuffer?.size != 4 * vertexArray.length) {
+        this.vertexBuffer = device.createBuffer({
+          label: `${this._name} vertex buffer`,
+          size: vertexArray.buffer.byteLength,
+          usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+        });
+      }
       device.queue.writeBuffer(this.vertexBuffer, 0, vertexArray);
     }
 
@@ -79,11 +57,13 @@ export class Mesh extends Component {
         .map((_, i) => [0, 1, 2, 0, 2, 3].map((x) => x + i * 4))
         .flat();
       const indexArray = new Uint32Array(indices);
-      this.indexBuffer = device.createBuffer({
-        label: `${name} index buffer`,
-        size: indexArray.buffer.byteLength,
-        usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
-      });
+      if (!this.indexBuffer || this.indexBuffer?.size != 4 * indexArray.length) {
+        this.indexBuffer = device.createBuffer({
+          label: `${this._name} index buffer`,
+          size: indexArray.buffer.byteLength,
+          usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
+        });
+      }
       device.queue.writeBuffer(this.indexBuffer, 0, indexArray);
     }
 
@@ -149,34 +129,115 @@ export class Mesh extends Component {
 
   }
 
-  update(ctx: UpdateContext): void {
-    const {world} = ctx;
-    const device = world.getResource(GpuResources)!.device;
-
+  update(device: GPUDevice): void {
     if (this._shouldUpdate) {
       this.createVertexAndIndexBuffers(device);
     }
-
-    const transform = this.getComponent(Transform);
-    assertDefined(transform, "Transform must exist on entity with a mesh");
-    const model = transform.matrix()
-
-    // Remove the translation, as normals should not be affected by translation
-    const modelWithoutTranslation = model.clone();
-    modelWithoutTranslation.rows[0].w = 0;
-    modelWithoutTranslation.rows[1].w = 0;
-    modelWithoutTranslation.rows[2].w = 0;
-
-    const array = new Float32Array([...model.buffer(), ...modelWithoutTranslation.inverse().transpose().buffer()]);
-    device.queue.writeBuffer(this.instanceBuffer!, 0, array);
   }
 
-  render(ctx: RenderContext) {
-    const {pass} = ctx;
+  render(pass: GPURenderPassEncoder, instanceBuffer: GPUBuffer) {
     pass.setVertexBuffer(0, this.vertexBuffer!);
-    pass.setVertexBuffer(1, this.instanceBuffer!);
+    pass.setVertexBuffer(1, instanceBuffer);
     pass.setIndexBuffer(this.indexBuffer!, "uint32");
     pass.drawIndexed(this.indexBuffer!.size / 4, 1);
+  }
+
+  static get vertexBufferLayout(): GPUVertexBufferLayout {
+    return {
+      stepMode: "vertex",
+      arrayStride: 68,
+      attributes: [
+        { // pos
+          format: "float32x3",
+          offset: 0,
+          shaderLocation: 0,
+        },
+        { // normal
+          format: "float32x3",
+          offset: 12,
+          shaderLocation: 1,
+        },
+        { // tangent
+          format: "float32x3",
+          offset: 24,
+          shaderLocation: 2,
+        },
+        { // bitangent
+          format: "float32x3",
+          offset: 36,
+          shaderLocation: 3,
+        },
+        { // uv
+          format: "float32x2",
+          offset: 48,
+          shaderLocation: 4,
+        },
+        { // color
+          format: "float32x3",
+          offset: 56,
+          shaderLocation: 5,
+        }
+      ],
+    };
+  }
+
+  static get instanceBufferLayout(): GPUVertexBufferLayout {
+    return {
+      stepMode: "instance",
+      arrayStride: 128,
+      attributes: [
+        // Model matrix
+        {
+          // column #1
+          format: "float32x4",
+          offset: 0,
+          shaderLocation: 6,
+        },
+        {
+          // column #2
+          format: "float32x4",
+          offset: 16,
+          shaderLocation: 7,
+        },
+        {
+          // column #3
+          format: "float32x4",
+          offset: 32,
+          shaderLocation: 8,
+        },
+        {
+          // column #4
+          format: "float32x4",
+          offset: 48,
+          shaderLocation: 9,
+        },
+        // Model inverse tranpose matrix
+        {
+          // column #1
+          format: "float32x4",
+          offset: 64,
+          shaderLocation: 10,
+        },
+        {
+          // column #2
+          format: "float32x4",
+          offset: 80,
+          shaderLocation: 11,
+        },
+        {
+          // column #3
+          format: "float32x4",
+          offset: 96,
+          shaderLocation: 12,
+        },
+        {
+          // column #4
+          format: "float32x4",
+          offset: 112,
+          shaderLocation: 13,
+        },
+      ],
+    }
   }
 }
 

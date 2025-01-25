@@ -1,10 +1,10 @@
 import {Aabb} from "../aabb";
 import {Component, InitContext} from "../ec/component";
 import {Vec3} from "../math/vec3";
-import {GpuResources} from "../resources/gpu-resources";
+import {Textures} from "../resources/textures";
 import {uvFromIndex} from "../texture";
 import {Vertex} from "../vertex";
-import {Mesh} from "./mesh";
+import {MeshHandle} from "./mesh-handle";
 
 export enum Block {
   Air = 0,
@@ -90,7 +90,7 @@ function cubePlane(texture: GPUTexture, topIndex: number, sideIndex: number, dir
 
 export class Terrain extends Component {
   private _blocks: Block[];
-  private _mesh?: Mesh;
+  private _meshHandle?: MeshHandle;
   private _texture?: GPUTexture;
 
   static SIZE_X = 80;
@@ -127,9 +127,9 @@ export class Terrain extends Component {
 
   init(ctx: InitContext): void {
     const {world} = ctx;
-    this._mesh = this.getComponent(Mesh)!;
-    this._texture = world.getResource(GpuResources)!.texture;
-    this._mesh.vertices = this.generateVertices(this._texture);
+    this._texture = world.getResource(Textures)!.texture("tileset");
+    this._meshHandle = this.getComponent(MeshHandle)!;
+    this._meshHandle.vertices = this.generateVertices(this._texture);
   }
 
   private generateVertices(texture: GPUTexture): Vertex[] {
@@ -160,7 +160,8 @@ export class Terrain extends Component {
   }
 
   setBlock(coord: Vec3, block: Block) {
-    const index = Terrain.index(coord.x, coord.y, coord.z);
+    const intCoord = coord.map(Math.floor);
+    const index = Terrain.index(intCoord.x, intCoord.y, intCoord.z);
     if (index !== undefined) {
       if (this._blocks[index] !== block) {
         this._blocks[index] = block;

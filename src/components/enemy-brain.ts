@@ -6,6 +6,7 @@ import {Turret} from "./turret";
 
 const SHOOT_DISTANCE = 8;
 const STOP_DISTANCE = 0.5;
+const HEIGHT_MAX = 3;
 
 export class EnemyBrain extends Component {
   private _speed: number = 2.5;
@@ -34,11 +35,13 @@ export class EnemyBrain extends Component {
     let targetOnPlane = new Vec2(target.x, target.z);
     const distanceSquared = targetOnPlane.magnitudeSquared();
     if (distanceSquared < STOP_DISTANCE * STOP_DISTANCE) {
+      this._body!.velocity.x = 0;
+      this._body!.velocity.z = 0;
       return;
     }
 
     if (this._body!.onGround) {
-      if (distanceSquared < SHOOT_DISTANCE * SHOOT_DISTANCE) {
+      if (distanceSquared < SHOOT_DISTANCE * SHOOT_DISTANCE && target.y <= HEIGHT_MAX) {
         const turret = this.getComponent(Turret)!;
         const aim = new Vec2(playerTransform.position.x, playerTransform.position.z);
         turret.queueShot(aim);
@@ -50,8 +53,8 @@ export class EnemyBrain extends Component {
       }
     }
 
-    targetOnPlane = targetOnPlane.normal();
-    this._body!.velocity.x = targetOnPlane.x * this._speed;
-    this._body!.velocity.z = targetOnPlane.y * this._speed;
+    const direction = targetOnPlane.normal();
+    this._body!.velocity.x = direction.x * this._speed;
+    this._body!.velocity.z = direction.y * this._speed;
   }
 }

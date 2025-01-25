@@ -1,5 +1,6 @@
 import {assert} from "../assertions";
-import {RenderContext, UpdateContext} from "./component";
+import { Constructor } from "../types";
+import {UpdateContext} from "./component";
 import {Entity} from "./entity";
 import {getResourceId, Resource, ResourceId} from "./resource";
 
@@ -24,8 +25,12 @@ export class World {
   }
 
   withResource<T extends Resource>(resource: T): World {
-    this._resources.set(getResourceId(resource.constructor as { new(...args: any[]): T }), resource);
+    this.addResource(resource);
     return this;
+  }
+
+  addResource<T extends Resource>(resource: T) {
+    this._resources.set(getResourceId(resource.constructor as { new(...args: any[]): T }), resource);
   }
 
   getResource<T extends Resource>(type: { new(...args: any[]): T }): T | undefined {
@@ -37,10 +42,19 @@ export class World {
   }
 
   addEntities(...entities: Entity[]) {
+    for (const entity of entities) {
+      entity.world = this;
+    }
     this._newEntities.push(...entities);
   }
 
   removeEntity(name: string): boolean {
+    const entity = this.getByName(name);
+    if (entity) {
+      for (const component of entity.components) {
+        entity.removeComponent(component.constructor as Constructor<any>);
+      }
+    }
     return this._entities.delete(name);
   }
 
@@ -77,19 +91,6 @@ export class World {
 
     for (const resource of this._resources.values()) {
       resource.postUpdate(ctx);
-    }
-  }
-
-  /**
-   * Performs any render actions specified by a component. We could abstract the
-   * whole rendering action into entities and components to remove this
-   * special-case, but for simplicity we'll move forward with this.
-   */
-  render(ctx: RenderContext) {
-    for (const entity of this._entities.values()) {
-      for (const component of entity.components) {
-        component.render(ctx);
-      }
     }
   }
 }

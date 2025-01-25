@@ -1,3 +1,4 @@
+import { Constructor } from "../types";
 import {Entity} from "./entity";
 import {World} from "./world";
 
@@ -11,15 +12,18 @@ export interface UpdateContext {
   world: World,
 }
 
-export interface RenderContext {
+export interface RenderContext extends UpdateContext {
   pass: GPURenderPassEncoder,
-  dt: number,
+}
+
+export interface CleanupContext {
+  world: World,
 }
 
 export abstract class Component {
   private _entity?: Entity;
 
-  getComponent<T extends Component>(type: { new(...args: any[]): T }): T | undefined {
+  getComponent<T extends Component>(type: Constructor<T>): T | undefined {
     return this._entity?.getComponent(type);
   }
 
@@ -45,6 +49,12 @@ export abstract class Component {
    * Runs every frame after update -- should only be used for rendering.
    */
   render(_ctx: RenderContext) {}
+
+  /**
+   * Runs once when the component is removed from the world. This includes when
+   * the owning entity, itself, is removed.
+   */
+  cleanup(_ctx: CleanupContext) {}
 }
 
 /**
@@ -66,7 +76,7 @@ export const getComponentId = (() => {
   // of).
   let nextComponentId = 0;
 
-  return <T extends Component>(type: { new(...args: any[]): T }): ComponentId => {
+  return <T extends Component>(type: Constructor<T>): ComponentId => {
     // @ts-ignore
     if (type._componentId === undefined) {
       // @ts-ignore

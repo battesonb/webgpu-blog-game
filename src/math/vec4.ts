@@ -1,3 +1,5 @@
+import {Vec3} from "./vec3";
+
 /**
  * A 4-dimensional vector.
  */
@@ -21,6 +23,10 @@ export class Vec4 {
 
   get z() {
     return this.rep[2];
+  }
+
+  get xyz() {
+    return new Vec3(this.x, this.y, this.z);
   }
 
   get w() {

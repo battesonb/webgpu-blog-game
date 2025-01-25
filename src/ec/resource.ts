@@ -1,3 +1,4 @@
+import { Constructor } from "../types";
 import {UpdateContext} from "./component";
 
 /**
@@ -41,7 +42,7 @@ export const getResourceId = (() => {
   // of).
   let nextResourceId = 0;
 
-  return <T extends Resource>(type: { new(...args: any[]): T }): ResourceId => {
+  return <T extends Resource>(type: Constructor<T>): ResourceId => {
     // @ts-ignore
     if (type._resourceId === undefined) {
       // @ts-ignore

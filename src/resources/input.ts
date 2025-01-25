@@ -5,7 +5,7 @@ import {Resource} from "../ec/resource";
 import {Vec2} from "../math/vec2";
 import {Vec3} from "../math/vec3";
 import {Vec4} from "../math/vec4";
-import {GpuResources} from "./gpu-resources";
+import {Renderer} from "./renderer";
 
 export class Input extends Resource {
   private keysPressed: Set<string> = new Set();
@@ -73,15 +73,12 @@ export class Input extends Resource {
 
   preUpdate(ctx: UpdateContext): void {
     const {world} = ctx;
-    const gpuResources = world.getResource(GpuResources);
-    const viewProjInv = gpuResources?.viewProjInv!;
+    const renderer = world.getResource(Renderer);
+    const viewProjInv = renderer?.viewProjInv!;
     const mousePosition = new Vec4(this.mousePosition.x, this.mousePosition.y, 0, 1);
     const mouseWorldPosition = viewProjInv.mul(mousePosition);
 
-    const x = mouseWorldPosition.x / mouseWorldPosition.w;
-    const y = mouseWorldPosition.y / mouseWorldPosition.w;
-    const z = mouseWorldPosition.z / mouseWorldPosition.w;
-    this._mouseWorldPosition = new Vec3(x, y, z);
+    this._mouseWorldPosition = mouseWorldPosition.xyz.div(mouseWorldPosition.w);
 
     const cameraPosition = world.getByName("camera")!.getComponent(Transform)!.position;
     const direction = this._mouseWorldPosition.sub(cameraPosition).normal();

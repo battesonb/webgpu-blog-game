@@ -30,7 +30,7 @@ struct Uniforms {
 };
 
 @group(0) @binding(0) var<uniform> uniforms: Uniforms;
-@group(0) @binding(1) var textureSampler: sampler;
+@group(0) @binding(1) var nearestSampler: sampler;
 @group(0) @binding(2) var textureView: texture_2d<f32>;
 
 @vertex
@@ -49,7 +49,7 @@ fn vertexMain(in: VertexInput, instance: InstanceInput) -> VertexOutput {
 
 @fragment
 fn fragmentMain(in: VertexOutput) -> @location(0) vec4f {
-  let color = textureSample(textureView, textureSampler, in.uv);
+  let color = textureSample(textureView, nearestSampler, in.uv);
   if (color.a == 0) {
     discard;
   }
