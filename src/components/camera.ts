@@ -37,6 +37,10 @@ export class Camera extends Component {
     );
   }
 
+  up(): Vec3 {
+    return this.right().cross(this.dir()).normal();
+  }
+
   right(): Vec3 {
     return new Vec3(Math.cos(this.yaw), 0.0, -Math.sin(this.yaw));
   }

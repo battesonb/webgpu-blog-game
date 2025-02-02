@@ -1,6 +1,4 @@
-import { assert } from "../assertions";
 import { MeshHandle } from "../components/mesh-handle";
-import { UpdateContext } from "../ec/component";
 import { Resource } from "../ec/resource";
 import { Mesh } from "../mesh";
 import { Vertex } from "../vertex";

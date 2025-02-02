@@ -1,3 +1,6 @@
+import { assert } from "../assertions";
+import { Rotor3 } from "./rotor3";
+
 /**
  * A 3-dimensional vector.
  */
@@ -62,9 +65,50 @@ export class Vec3 {
     return this.map(c => c / scalar);
   }
 
-  mul(value: number | Vec3): Vec3 {
+  /**
+   * This method assumes that both vectors are normal. Output is nonsense, otherwise.
+   */
+  angleBetween(other: Vec3): number {
+    return Math.acos(this.dot(other));
+  }
+
+  mul(value: number): Vec3;
+  /**
+   * Produces the a [Rotor3] using the mathematical definition. This means this is equivalent to:
+   *
+   * ```
+   * R = to * from.
+   * ```
+   *
+   * This is because the sandwich product is applied inside-out.
+   */
+  mul(from: Vec3): Rotor3;
+  mul(value: number | Vec3): Vec3 | Rotor3 {
     if (value instanceof Vec3) {
-      return new Vec3(this.x * value.x, this.y * value.y, this.z * value.z);
+      // Choose a vector halfway between the two to get the rotor representing half their angle
+      // instead of double.
+      const to= this.normal();
+      const from = value.normal();
+      const halfway = (from.add(to)).normal();
+
+      assert(halfway.magnitudeSquared() > 0.001, "Small halfway vector was unexpected with rotor implementation");
+
+      // This is "backwards" because we want to apply a then b via the sandwich
+      // product. Recall that this means we do:
+      // RvR^{-1} = bava^{-1}b^{-1}
+      //
+      // Therefore, the rotor we want is R=ba, not ab.
+      const wedge = new Vec3(
+        halfway.y * from.z - halfway.z * from.y,
+        halfway.z * from.x - halfway.x * from.z,
+        halfway.x * from.y - halfway.y * from.x,
+      );
+      return new Rotor3(
+        halfway.dot(from),
+        wedge.x,
+        wedge.y,
+        wedge.z,
+      );
     }
     return this.map(c => c * value);
   }
