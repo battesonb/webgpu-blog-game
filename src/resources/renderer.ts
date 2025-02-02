@@ -104,7 +104,7 @@ export class Renderer extends Resource {
     const cameraComp = camera.getComponent(Camera)!;
     const cameraTrans = camera.getComponent(Transform)!;
     this.viewPos = cameraTrans.position;
-    this.viewProj = projection.matrix().mul(cameraComp.matrix(cameraTrans.position));
+    this.viewProj = projection.matrix().mul(cameraComp.matrix());
     this.viewProjInv = this.viewProj.inverse();
 
     const frustumCorners = corners.map(corner => {
@@ -121,7 +121,7 @@ export class Renderer extends Resource {
     const total = frustumCorners.reduce((acc, curr) => acc.add(curr), Vec4.zero());
     const average = total.div(frustumCorners.length);
     lightTransform.position = new Vec3(average.x, average.y, average.z);
-    this.lightView = lightCamera.matrix(lightTransform.position);
+    this.lightView = lightCamera.matrix();
 
     let minX = Number.MAX_VALUE;
     let minY = Number.MAX_VALUE;
