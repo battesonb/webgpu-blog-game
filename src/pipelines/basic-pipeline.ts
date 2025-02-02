@@ -58,7 +58,9 @@ export class BasicPipeline extends RenderPipeline {
         {
           binding: 5,
           visibility: GPUShaderStage.FRAGMENT,
-          sampler: {},
+          sampler: {
+            type: "non-filtering",
+          },
         },
         // Shadow map
         {
@@ -97,7 +99,7 @@ export class BasicPipeline extends RenderPipeline {
         },
         {
           binding: 5,
-          resource: renderer.linearSampler,
+          resource: renderer.depthSampler,
         },
         {
           binding: 6,

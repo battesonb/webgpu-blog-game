@@ -42,7 +42,7 @@ struct Uniforms {
 @group(0) @binding(2) var textureView: texture_2d<f32>;
 @group(0) @binding(3) var textureNormalView: texture_2d<f32>;
 @group(0) @binding(4) var textureGlossView: texture_2d<f32>;
-@group(0) @binding(5) var linearSampler: sampler;
+@group(0) @binding(5) var depthSampler: sampler;
 @group(0) @binding(6) var shadowTextureView: texture_depth_2d;
 
 @vertex
@@ -94,7 +94,7 @@ fn shadow(in: VertexOutput) -> f32 {
         (in.light_pos.x + 1.0) * 0.5,
         (-in.light_pos.y + 1.0) * 0.5,
       );
-      let light_depth = textureSample(shadowTextureView, linearSampler, uv + vec2f(f32(x), f32(y)) * texel_size);
+      let light_depth = textureSample(shadowTextureView, depthSampler, uv + vec2f(f32(x), f32(y)) * texel_size);
 
       if (uv.x < 0.0 || uv.y < 0.0 || uv.x >= 1.0 || uv.y >= 1.0) {
         // Set this to zero to debug the orthographic frustum

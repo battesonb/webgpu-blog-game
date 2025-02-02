@@ -21,7 +21,7 @@ export class Renderer extends Resource {
   private _device?: GPUDevice;
   private _uniformsBuffer?: GPUBuffer;
 
-  private _linearSampler?: GPUSampler;
+  private _depthSampler?: GPUSampler;
   private _nearestSampler?: GPUSampler;
 
   readonly canvas: HTMLCanvasElement;
@@ -85,10 +85,7 @@ export class Renderer extends Resource {
     });
     this._device.queue.writeBuffer(this._uniformsBuffer, 0, uniformsArray);
 
-    this._linearSampler = this._device.createSampler({
-      magFilter: "linear",
-      minFilter: "linear",
-    });
+    this._depthSampler = this._device.createSampler({});
 
     this._nearestSampler = this._device.createSampler({
       minFilter: "nearest",
@@ -181,8 +178,8 @@ export class Renderer extends Resource {
     return this._uniformsBuffer!;
   }
 
-  get linearSampler(): GPUSampler {
-    return this._linearSampler!;
+  get depthSampler(): GPUSampler {
+    return this._depthSampler!;
   }
 
   get nearestSampler(): GPUSampler {
