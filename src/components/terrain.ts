@@ -51,38 +51,38 @@ const cardinalDirections = [
 function cubePlane(texture: GPUTexture, topIndex: number, sideIndex: number, direction: Vec3) {
   if (direction.x == 1) {
     return [
-      new Vertex(new Vec3(1, 0, 1), uvFromIndex(sideIndex, 0.0, 1.0, texture)),
-      new Vertex(new Vec3(1, 0, 0), uvFromIndex(sideIndex, 1.0, 1.0, texture)),
-      new Vertex(new Vec3(1, 1, 0), uvFromIndex(sideIndex, 1.0, 0.0, texture)),
-      new Vertex(new Vec3(1, 1, 1), uvFromIndex(sideIndex, 0.0, 0.0, texture)),
+      new Vertex(new Vec3(1, 1, 0), uvFromIndex(sideIndex, 0.0, 0.0, texture)),
+      new Vertex(new Vec3(1, 0, 0), uvFromIndex(sideIndex, 0.0, 1.0, texture)),
+      new Vertex(new Vec3(1, 0, 1), uvFromIndex(sideIndex, 1.0, 1.0, texture)),
+      new Vertex(new Vec3(1, 1, 1), uvFromIndex(sideIndex, 1.0, 0.0, texture)),
     ];
   } else if (direction.x == -1) {
     return [
-      new Vertex(new Vec3(0, 0, 1), uvFromIndex(sideIndex, 0.0, 1.0, texture)),
       new Vertex(new Vec3(0, 1, 1), uvFromIndex(sideIndex, 0.0, 0.0, texture)),
-      new Vertex(new Vec3(0, 1, 0), uvFromIndex(sideIndex, 1.0, 0.0, texture)),
+      new Vertex(new Vec3(0, 0, 1), uvFromIndex(sideIndex, 0.0, 1.0, texture)),
       new Vertex(new Vec3(0, 0, 0), uvFromIndex(sideIndex, 1.0, 1.0, texture)),
+      new Vertex(new Vec3(0, 1, 0), uvFromIndex(sideIndex, 1.0, 0.0, texture)),
     ];
   } else if (direction.z == 1) {
     return [
-      new Vertex(new Vec3(0, 0, 1), uvFromIndex(sideIndex, 0.0, 1.0, texture)),
-      new Vertex(new Vec3(1, 0, 1), uvFromIndex(sideIndex, 1.0, 1.0, texture)),
-      new Vertex(new Vec3(1, 1, 1), uvFromIndex(sideIndex, 1.0, 0.0, texture)),
-      new Vertex(new Vec3(0, 1, 1), uvFromIndex(sideIndex, 0.0, 0.0, texture)),
+      new Vertex(new Vec3(1, 1, 1), uvFromIndex(sideIndex, 0.0, 0.0, texture)),
+      new Vertex(new Vec3(1, 0, 1), uvFromIndex(sideIndex, 0.0, 1.0, texture)),
+      new Vertex(new Vec3(0, 0, 1), uvFromIndex(sideIndex, 1.0, 1.0, texture)),
+      new Vertex(new Vec3(0, 1, 1), uvFromIndex(sideIndex, 1.0, 0.0, texture)),
     ];
   } else if (direction.z == -1) {
     return [
-      new Vertex(new Vec3(0, 0, 0), uvFromIndex(sideIndex, 0.0, 1.0, texture)),
       new Vertex(new Vec3(0, 1, 0), uvFromIndex(sideIndex, 0.0, 0.0, texture)),
-      new Vertex(new Vec3(1, 1, 0), uvFromIndex(sideIndex, 1.0, 0.0, texture)),
+      new Vertex(new Vec3(0, 0, 0), uvFromIndex(sideIndex, 0.0, 1.0, texture)),
       new Vertex(new Vec3(1, 0, 0), uvFromIndex(sideIndex, 1.0, 1.0, texture)),
+      new Vertex(new Vec3(1, 1, 0), uvFromIndex(sideIndex, 1.0, 0.0, texture)),
     ];
   } else if (direction.y == 1) {
     return [
-      new Vertex(new Vec3(0, 1, 1), uvFromIndex(topIndex, 0.0, 1.0, texture)),
-      new Vertex(new Vec3(1, 1, 1), uvFromIndex(topIndex, 1.0, 1.0, texture)),
-      new Vertex(new Vec3(1, 1, 0), uvFromIndex(topIndex, 1.0, 0.0, texture)),
-      new Vertex(new Vec3(0, 1, 0), uvFromIndex(topIndex, 0.0, 0.0, texture)),
+      new Vertex(new Vec3(1, 1, 0), uvFromIndex(topIndex, 0.0, 0.0, texture)),
+      new Vertex(new Vec3(1, 1, 1), uvFromIndex(topIndex, 0.0, 1.0, texture)),
+      new Vertex(new Vec3(0, 1, 1), uvFromIndex(topIndex, 1.0, 1.0, texture)),
+      new Vertex(new Vec3(0, 1, 0), uvFromIndex(topIndex, 1.0, 0.0, texture)),
     ];
   }
   return [];

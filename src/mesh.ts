@@ -88,8 +88,8 @@ export class Mesh {
   }
 
   /**
-   * Given a vertices representing a triangle in anti-clockwise winding order,
-   * and UV coordinates that start at the top-left of an image, set the vertex
+   * Given vertices representing a triangle in anti-clockwise winding order, and
+   * UV coordinates that start at the top-left of an image, set the vertex
    * tangent and bi-tangent vectors.
    */
   private updateTriangleTangents(a: Vertex, b: Vertex, c: Vertex) {
@@ -99,7 +99,7 @@ export class Mesh {
     const edge2 = c.position.sub(a.position);
     const deltaUv2 = c.uv.sub(a.uv);
 
-    const determinant = 1.0 / (deltaUv1.y * deltaUv2.x - deltaUv1.x * deltaUv2.y);
+    const determinant = 1.0 / (deltaUv1.x * deltaUv2.y - deltaUv1.y * deltaUv2.x);
 
     const tangent = new Vec3(
       -deltaUv2.y * edge1.x + deltaUv1.y * edge2.x,
@@ -108,9 +108,9 @@ export class Mesh {
     ).mul(determinant).normal();
 
     const bitangent = new Vec3(
-      -deltaUv2.x * edge1.x + deltaUv1.x * edge2.x,
-      -deltaUv2.x * edge1.y + deltaUv1.x * edge2.y,
-      -deltaUv2.x * edge1.z + deltaUv1.x * edge2.z,
+      deltaUv2.x * edge1.x - deltaUv1.x * edge2.x,
+      deltaUv2.x * edge1.y - deltaUv1.x * edge2.y,
+      deltaUv2.x * edge1.z - deltaUv1.x * edge2.z,
     ).mul(determinant).normal();
 
     const normal = tangent.cross(bitangent).normal();

@@ -31,12 +31,12 @@ export class Camera extends Component {
     const e = this._transform!.position;
     const d = this.dir();
     const r = this.right();
-    const u = r.cross(d).normal();
+    const u = d.cross(r).normal();
     return new Mat4(
-       r.x,  r.y,  r.z, -e.dot(r),
-       u.x,  u.y,  u.z, -e.dot(u),
-      -d.x, -d.y, -d.z,  e.dot(d),
-         0,    0,    0,         1
+      r.x, r.y, r.z, -e.dot(r),
+      u.x, u.y, u.z, -e.dot(u),
+      d.x, d.y, d.z, -e.dot(d),
+        0,   0,   0,         1
     );
   }
 
@@ -49,6 +49,6 @@ export class Camera extends Component {
   }
 
   dir(): Vec3 {
-    return this._transform!.rotation.sandwich(Vec3.unitZ().neg());
+    return this._transform!.rotation.sandwich(Vec3.unitZ());
   }
 }

@@ -116,6 +116,7 @@ fn fragmentMain(in: VertexOutput) -> @location(0) vec4f {
   }
 
   var normal = textureSample(textureNormalView, nearestSampler, in.uv).rgb;
+  normal.x = 1.0 - normal.x; // flip for left-handed coordinate system
   normal = normalize(normal * 2.0 - 1.0);
   let tbn = mat3x3f(
     in.world_tangent,

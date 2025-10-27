@@ -139,7 +139,7 @@ export class Renderer extends Resource {
       maxZ = Math.max(maxZ, lightPos.z);
     });
 
-    this.lightProjection = new OrthographicProjection(minX, maxX, minY, maxY, -1 * maxZ, -1 * minZ);
+    this.lightProjection = new OrthographicProjection(minX, maxX, minY, maxY, minZ, maxZ);
     this.lightViewProj = this.lightProjection.matrix().mul(this.lightView);
   }
 

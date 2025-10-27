@@ -16,7 +16,7 @@ export class DirectionalLight extends Component {
   update(ctx: UpdateContext): void {
     const {world} = ctx;
     const input = world.getResource(Input)!;
-    this._camera!.pitch = Math.min(Math.PI / 2, 1 / (2 * input.mousePosition.magnitude()));
-    this._camera!.yaw = -input.mousePosition.angle() + toRadians(45);
+    this._camera!.pitch = -Math.min(Math.PI / 2, 1 / (2 * input.mousePosition.magnitude()));
+    this._camera!.yaw = input.mousePosition.angle() - toRadians(135);
   }
 }

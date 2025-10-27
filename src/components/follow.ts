@@ -34,7 +34,7 @@ export class Follow extends Component {
   private targetPosition(world: World): Vec3 {
     const target = world.getByName(this.targetName);
     if (!target) {
-      return new Vec3(Terrain.SIZE_X * 1.5, 110, Terrain.SIZE_Z * 1.5);
+      return new Vec3(-Terrain.SIZE_X * 0.5, 110, -Terrain.SIZE_Z * 0.5);
     }
     return target.getComponent(Transform)!.position;
   }

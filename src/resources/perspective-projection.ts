@@ -23,9 +23,9 @@ export class PerspectiveProjection extends Resource {
     const tan = Math.tan(this.fovY / 2);
     perspMatrix.rows[0].x = 1 / (aspect * tan);
     perspMatrix.rows[1].y = 1 / tan;
-    perspMatrix.rows[2].z = this.far / (this.near - this.far);
+    perspMatrix.rows[2].z = this.far / (this.far - this.near);
     perspMatrix.rows[2].w = this.far * this.near / (this.near - this.far);
-    perspMatrix.rows[3].z = -1;
+    perspMatrix.rows[3].z = 1;
     return perspMatrix;
   }
 }

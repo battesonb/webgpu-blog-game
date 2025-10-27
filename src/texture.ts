@@ -19,6 +19,10 @@ export async function webGpuTextureFromUrl(device: GPUDevice, url: string): Prom
 
 const TILE_SIZE = 8;
 const PADDING = 1;
+/**
+ * Returns the UV index for the given x and y coordinates in texture space
+ * (x-right, y-down).
+ */
 export function uvFromIndex(index: number, x: number, y: number, texture: GPUTexture): Vec2 {
   const i = ((index * (TILE_SIZE + PADDING)) % texture.width) / texture.width;
   return new Vec2(i + (x * TILE_SIZE) / texture.width, y * TILE_SIZE / texture.height);

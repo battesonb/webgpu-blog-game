@@ -26,7 +26,7 @@ export class OrthographicProjection extends Component {
     perspMatrix.rows[0].w = -(this.right + this.left) / (this.right - this.left);
     perspMatrix.rows[1].y = 2 / (this.top - this.bottom);
     perspMatrix.rows[1].w = -(this.top + this.bottom) / (this.top - this.bottom);
-    perspMatrix.rows[2].z = -1 / (this.far - this.near);
+    perspMatrix.rows[2].z = 1 / (this.far - this.near);
     perspMatrix.rows[2].w = -this.near / (this.far - this.near);
     perspMatrix.rows[3].w = 1;
 

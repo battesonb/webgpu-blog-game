@@ -29,11 +29,11 @@ export class PlayerController extends Component {
       direction.y -= 1;
     }
     if (input.keyDown("w")) {
-      direction.x -= 1;
-      direction.y -= 1;
-    } else if (input.keyDown("s")) {
       direction.x += 1;
       direction.y += 1;
+    } else if (input.keyDown("s")) {
+      direction.x -= 1;
+      direction.y -= 1;
     }
 
     if (direction.magnitudeSquared() > 0.1) {
